@@ -12,8 +12,13 @@ func PostHandler(res http.ResponseWriter, req *http.Request) {
 	relPathString := req.URL.Path
 	pathParamsArray := strings.Split(relPathString, "/")
 
-	if len(pathParamsArray) < 5 {
+	if len(pathParamsArray) == 4 {
 		http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
+		return
+	}
+
+	if len(pathParamsArray) == 3 {
+		http.Error(res, "incorrect type of metrics", http.StatusNotFound)
 		return
 	}
 
