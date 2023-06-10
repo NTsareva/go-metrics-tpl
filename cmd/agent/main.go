@@ -27,7 +27,7 @@ func SendRuntimeMetrics(m *MetricsGauge) {
 		if err != nil {
 			panic(err)
 		}
-
+		defer response.Body.Close()
 		log.Println(response)
 	}
 }
