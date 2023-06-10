@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"net/http"
@@ -31,7 +31,7 @@ func PostHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func checkMetricsValue(res http.ResponseWriter, metricValue string) {
-	_, e := strconv.Atoi(metricValue)
+	_, e := strconv.ParseFloat(metricValue, 64)
 	if e != nil {
 		http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
 		return
