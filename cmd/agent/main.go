@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -13,15 +12,14 @@ func main() {
 	gm.New()
 
 	for {
-		gm.Renew()
-		time.Sleep(pollInterval * time.Second)
+		go gm.Renew()
 		SendRuntimeMetrics(&gm)
-		time.Sleep(reportInterval * time.Second)
 	}
-
 }
 
 func SendRuntimeMetrics(m *MetricsGauge) {
+	time.Sleep(reportInterval * time.Second)
+
 	url := "http://localhost:8080"
 	for k, v := range m.runtimeMetrics {
 		url = url + "/update/gauge/" + k + "/" + strconv.FormatFloat(v, 'f', 1, 64)
@@ -30,9 +28,6 @@ func SendRuntimeMetrics(m *MetricsGauge) {
 			panic(err)
 		}
 
-		fmt.Println(response.Status)
-		log.Print(response.Status)
-
+		log.Println(response)
 	}
-
 }

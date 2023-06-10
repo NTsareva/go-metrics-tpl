@@ -1,6 +1,9 @@
 package main
 
-import "runtime"
+import (
+	"runtime"
+	"time"
+)
 
 type gauge float64
 type counter int64
@@ -46,6 +49,8 @@ func (m *MetricsGauge) New() {
 }
 
 func (m *MetricsGauge) Renew() {
+	time.Sleep(pollInterval * time.Second)
+
 	var ms runtime.MemStats
 	runtime.ReadMemStats(&ms)
 
