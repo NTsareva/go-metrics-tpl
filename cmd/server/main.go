@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/NTsareva/go-metrics-tpl.git/cmd/handlers"
+	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
 	"net/http"
 )
 

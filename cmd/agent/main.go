@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const URL = "http://localhost:8080"
+
 func main() {
 	var gm MetricsGauge
 	gm.New()
@@ -20,9 +22,10 @@ func main() {
 func SendRuntimeMetrics(m *MetricsGauge) {
 	time.Sleep(reportInterval * time.Second)
 
-	url := "http://localhost:8080"
+	url := URL
 	for k, v := range m.runtimeMetrics {
 		url = url + "/update/gauge/" + k + "/" + strconv.FormatFloat(v, 'f', 1, 64)
+
 		response, err := http.Post(url, "text/plain", nil)
 		if err != nil {
 			panic(err)

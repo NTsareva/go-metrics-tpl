@@ -24,8 +24,7 @@ func PostHandler(res http.ResponseWriter, req *http.Request) {
 
 	metricsType := pathParamsArray[2]
 	checkType(res, metricsType)
-	//metricsName := pathParamsArray[3]
-	//обработчик <ЗНАЧЕНИЕ_МЕТРИКИ>
+
 	metricsValue := pathParamsArray[4]
 	checkMetricsValue(res, metricsValue)
 }

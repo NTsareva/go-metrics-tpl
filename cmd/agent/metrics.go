@@ -81,4 +81,6 @@ func (m *MetricsGauge) Renew() {
 	m.runtimeMetrics["StackSys"] = float64(ms.StackSys)
 	m.runtimeMetrics["Sys"] = float64(ms.Sys)
 	m.runtimeMetrics["TotalAlloc"] = float64(ms.TotalAlloc)
+
+	m.PollCount += 1
 }
