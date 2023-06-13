@@ -30,11 +30,11 @@ func main() {
 	}
 
 	if envReportInterval := os.Getenv("REPORT_INTERVAL"); envReportInterval != "" {
-		agentParams.address = envReportInterval
+		agentParams.reportInterval, _ = strconv.Atoi(envReportInterval)
 	}
 
 	if envPollInterval := os.Getenv("POLL_INTERVAL"); envPollInterval != "" {
-		agentParams.address = envPollInterval
+		agentParams.pollInterval, _ = strconv.Atoi(envPollInterval)
 	}
 
 	var mg agentMetrics.MetricsGauge
@@ -71,7 +71,7 @@ func metricsRenew(mg agentMetrics.MetricsGauge, mc agentMetrics.MetricsCount) {
 	mc.Renew()
 }
 
-func SendRuntimeMetrics(m *agentMetrics.MetricsGauge, cm *agentMetrics.MetricsCount) {
+func SendRuntimeMetrics(mg *agentMetrics.MetricsGauge, mc *agentMetrics.MetricsCount) {
 	client := resty.New()
 
 	agentURL := agentParams.address
@@ -85,10 +85,12 @@ func SendRuntimeMetrics(m *agentMetrics.MetricsGauge, cm *agentMetrics.MetricsCo
 		SetHeader("Content-Type", "plain/text").
 		SetHeader("Accept", "plain/text")
 
-	for k, v := range m.RuntimeMetrics {
+	postCLient := client.R()
+
+	for k, v := range mg.RuntimeMetrics {
 		url := "http://" + agentURL + "/update/gauge/" + k + "/" + agentMetrics.GaugeToString(v)
 
-		response, err := client.R().
+		response, err := postCLient.
 			Post(url)
 
 		if err != nil {
@@ -99,10 +101,10 @@ func SendRuntimeMetrics(m *agentMetrics.MetricsGauge, cm *agentMetrics.MetricsCo
 		log.Println(url)
 	}
 
-	for k, v := range cm.RuntimeMetrics {
+	for k, v := range mc.RuntimeMetrics {
 		url := "http://" + agentURL + "/update/counter/" + k + "/" + strconv.Itoa(int(v))
 
-		response, err := client.R().
+		response, err := postCLient.
 			Post(url)
 
 		if err != nil {
