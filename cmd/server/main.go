@@ -33,7 +33,7 @@ func MetricsRouter() chi.Router {
 	r.Post("/update/{type}/", handlers.NoMetricsHandler)              //Done
 	r.Post("/update/{type}/{metric}", handlers.NoMetricValueHandler)  //Done
 	r.Post("/update/{type}/{metric}/", handlers.NoMetricValueHandler) //Done
-	//Надо бы вынести в отдельную функцию, но пока не разобралась, как мемсторадж использовать в параметрах
+	//Надо бы вынести в отдельную функцию c глобальным мемстораджем. но мне это не нравится
 	r.Post("/update/{type}/{metric}/{value}", func(res http.ResponseWriter, req *http.Request) {
 		//Проверка, что тип корректный
 		sentMetricType := strings.ToLower(chi.URLParam(req, "type"))
