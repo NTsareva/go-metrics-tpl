@@ -30,20 +30,17 @@ func main() {
 			http.Error(res, "incorrect type of metrics "+sentMetricType+" ", http.StatusBadRequest)
 		}
 
-		//Проверяем, что метрика попадает в список
 		sentMetric := strings.ToLower(chi.URLParam(req, "metric"))
-		//тут как-то корвертать
-		_, okGauge := ms.GaugeStorage[sentMetric]
-		_, okCounter := ms.CounterStorage[sentMetric]
-
-		if !okCounter || !okGauge {
-			all, _ := ms.PrintAll()
-			http.Error(res, "unknown type of metrics "+sentMetric+" "+all, http.StatusNotFound)
-		}
 
 		//Проверяем, что значение соответствует типу
 		sentMetricValue := strings.ToLower(chi.URLParam(req, "value"))
 		if sentMetricType == MemStorage.Gauge {
+			//_, okGauge := ms.GaugeStorage[sentMetric]
+			//
+			//if !okGauge {
+			//	http.Error(res, "unknown type of metrics "+sentMetric, http.StatusNotFound)
+			//}
+
 			val, e := MemStorage.StringToGauge(sentMetricValue, 64)
 			if e != nil {
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)

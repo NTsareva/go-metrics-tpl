@@ -50,36 +50,36 @@ type MetricsCount struct {
 
 func (mg *MetricsGauge) New() {
 	mg.RuntimeMetrics = make(map[string]gauge)
-	mg.RuntimeMetrics["Alloc"] = 0.0
-	mg.RuntimeMetrics["BuckHashSys"] = 0.0
-	mg.RuntimeMetrics["Frees"] = 0.0
-	mg.RuntimeMetrics["GCCPUFraction"] = 0.0
-	mg.RuntimeMetrics["GCSys"] = 0.0
-	mg.RuntimeMetrics["HeapAlloc"] = 0.0
-	mg.RuntimeMetrics["HeapIdle"] = 0.0
-	mg.RuntimeMetrics["HeapInuse"] = 0.0
-	mg.RuntimeMetrics["HeapObjects"] = 0.0
-	mg.RuntimeMetrics["HeapReleased"] = 0.0
-	mg.RuntimeMetrics["HeapSys"] = 0.0
-	mg.RuntimeMetrics["LastGC"] = 0.0
-	mg.RuntimeMetrics["Lookups"] = 0.0
-	mg.RuntimeMetrics["MCacheInuse"] = 0.0
-	mg.RuntimeMetrics["MCacheSys"] = 0.0
-	mg.RuntimeMetrics["MSpanInuse"] = 0.0
-	mg.RuntimeMetrics["MSpanSys"] = 0.0
-	mg.RuntimeMetrics["Mallocs"] = 0.0
-	mg.RuntimeMetrics["NextGC"] = 0.0
-	mg.RuntimeMetrics["NumForcedGC"] = 0.0
-	mg.RuntimeMetrics["NumGC"] = 0.0
-	mg.RuntimeMetrics["OtherSys"] = 0.0
-	mg.RuntimeMetrics["PauseTotalNs"] = 0.0
-	mg.RuntimeMetrics["StackInuse"] = 0.0
-	mg.RuntimeMetrics["StackSys"] = 0.0
-	mg.RuntimeMetrics["Sys"] = 0.0
-	mg.RuntimeMetrics["TotalAlloc"] = 0.0
+	mg.RuntimeMetrics["alloc"] = 0.0
+	mg.RuntimeMetrics["buckhashsys"] = 0.0
+	mg.RuntimeMetrics["frees"] = 0.0
+	mg.RuntimeMetrics["gccpufraction"] = 0.0
+	mg.RuntimeMetrics["gcsys"] = 0.0
+	mg.RuntimeMetrics["heapalloc"] = 0.0
+	mg.RuntimeMetrics["heapidle"] = 0.0
+	mg.RuntimeMetrics["heapinuse"] = 0.0
+	mg.RuntimeMetrics["heapobjects"] = 0.0
+	mg.RuntimeMetrics["heapreleased"] = 0.0
+	mg.RuntimeMetrics["heapsys"] = 0.0
+	mg.RuntimeMetrics["lastgc"] = 0.0
+	mg.RuntimeMetrics["lookups"] = 0.0
+	mg.RuntimeMetrics["mccacheinuse"] = 0.0
+	mg.RuntimeMetrics["mcachesys"] = 0.0
+	mg.RuntimeMetrics["mspaninuse"] = 0.0
+	mg.RuntimeMetrics["mspansys"] = 0.0
+	mg.RuntimeMetrics["mallocs"] = 0.0
+	mg.RuntimeMetrics["nextgc"] = 0.0
+	mg.RuntimeMetrics["numcorcedgc"] = 0.0
+	mg.RuntimeMetrics["numgc"] = 0.0
+	mg.RuntimeMetrics["othersys"] = 0.0
+	mg.RuntimeMetrics["pausetotalns"] = 0.0
+	mg.RuntimeMetrics["stackinuse"] = 0.0
+	mg.RuntimeMetrics["stacksys"] = 0.0
+	mg.RuntimeMetrics["sys"] = 0.0
+	mg.RuntimeMetrics["totalalloc"] = 0.0
 }
 
 func (mc *MetricsCount) New() {
 	mc.RuntimeMetrics = make(map[string]counter)
-	mc.RuntimeMetrics["PollCount"] = 0
+	mc.RuntimeMetrics["pollcount"] = 0
 }
