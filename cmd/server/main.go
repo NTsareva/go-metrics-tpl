@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func main() {
+func MetricsRouter() chi.Router {
 	r := chi.NewRouter()
 	var ms memstorage.MemStorage
 	ms.New()
@@ -22,6 +22,7 @@ func main() {
 	r.Post("/update/{type}/", handlers.NoMetricsHandler)              //Done
 	r.Post("/update/{type}/{metric}", handlers.NoMetricValueHandler)  //Done
 	r.Post("/update/{type}/{metric}/", handlers.NoMetricValueHandler) //Done
+	//Надо бы вынести в отдельную функцию, но пока не разобралась, как мемсторадж использовать в параметрах
 	r.Post("/update/{type}/{metric}/{value}", func(res http.ResponseWriter, req *http.Request) {
 		//Проверка, что тип корректный
 		sentMetricType := strings.ToLower(chi.URLParam(req, "type"))
@@ -35,11 +36,6 @@ func main() {
 		//Проверяем, что значение соответствует типу
 		sentMetricValue := strings.ToLower(chi.URLParam(req, "value"))
 		if sentMetricType == memstorage.Gauge {
-			//_, okGauge := ms.GaugeStorage[sentMetric]
-			//
-			//if !okGauge {
-			//	http.Error(res, "unknown type of metrics "+sentMetric, http.StatusNotFound)
-			//}
 
 			val, e := memstorage.StringToGauge(sentMetricValue, 64)
 			if e != nil {
@@ -61,12 +57,14 @@ func main() {
 		}
 	})
 
-	r.Get("/", handlers.AllMetricsHandler) //GET all metrics
 	r.Get("/", func(res http.ResponseWriter, req *http.Request) {
 		body, _ := ms.PrintAll()
 		io.WriteString(res, body)
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+	return r
+}
 
+func main() {
+	log.Fatal(http.ListenAndServe(":8080", MetricsRouter()))
 }
