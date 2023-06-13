@@ -2,19 +2,20 @@ package agentmetrics
 
 import (
 	"runtime"
-	"time"
 )
 
 type gauge float64
 type counter int64
 
-const pollInterval = 2
 const ReportInterval = 10
 
 type MetricsGauge struct {
 	RuntimeMetrics map[string]gauge
-	PollCount      counter
 	RandomValue    gauge
+}
+
+type MetricsCount struct {
+	RuntimeMetrics map[string]counter
 }
 
 func (m *MetricsGauge) New() {
@@ -49,8 +50,6 @@ func (m *MetricsGauge) New() {
 }
 
 func (m *MetricsGauge) Renew() {
-	time.Sleep(pollInterval * time.Second)
-
 	var ms runtime.MemStats
 	runtime.ReadMemStats(&ms)
 
@@ -81,6 +80,13 @@ func (m *MetricsGauge) Renew() {
 	m.RuntimeMetrics["stacksys"] = gauge(ms.StackSys)
 	m.RuntimeMetrics["sys"] = gauge(ms.Sys)
 	m.RuntimeMetrics["totalslloc"] = gauge(ms.TotalAlloc)
+}
 
-	m.PollCount += 1
+func (mc *MetricsCount) New() {
+	mc.RuntimeMetrics = make(map[string]counter)
+	mc.RuntimeMetrics["pollcount"] = 0
+}
+
+func (mc *MetricsCount) Renew() {
+	mc.RuntimeMetrics["pollcount"] += 1
 }

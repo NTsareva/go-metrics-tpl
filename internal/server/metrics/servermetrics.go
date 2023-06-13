@@ -40,7 +40,6 @@ func GaugeToString(gv gauge) string {
 
 type MetricsGauge struct {
 	RuntimeMetrics map[string]gauge
-	PollCount      counter
 	RandomValue    gauge
 }
 
