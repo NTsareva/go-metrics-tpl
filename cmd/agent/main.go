@@ -5,6 +5,7 @@ import (
 	agentMetrics "github.com/NTsareva/go-metrics-tpl.git/internal/agent/metrics"
 	"github.com/go-resty/resty/v2"
 	"log"
+	"os"
 	"strconv"
 	"time"
 )
@@ -15,12 +16,26 @@ var agentParams struct {
 	reportInterval int
 }
 
-func main() {
+func init() {
 	flag.StringVar(&agentParams.address, "a", "localhost:8080", "input address")
 	flag.IntVar(&agentParams.pollInterval, "p", 2, "input poll interval")
 	flag.IntVar(&agentParams.reportInterval, "r", 10, "input report interval")
-	// делаем разбор командной строки
+}
+
+func main() {
 	flag.Parse()
+
+	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
+		agentParams.address = envRunAddr
+	}
+
+	if envReportInterval := os.Getenv("REPORT_INTERVAL"); envReportInterval != "" {
+		agentParams.address = envReportInterval
+	}
+
+	if envPollInterval := os.Getenv("POLL_INTERVAL"); envPollInterval != "" {
+		agentParams.address = envPollInterval
+	}
 
 	var mg agentMetrics.MetricsGauge
 	var mc agentMetrics.MetricsCount
@@ -71,7 +86,7 @@ func SendRuntimeMetrics(m *agentMetrics.MetricsGauge, cm *agentMetrics.MetricsCo
 		SetHeader("Accept", "plain/text")
 
 	for k, v := range m.RuntimeMetrics {
-		url := "http://" + agentURL + "/update/gauge/" + k + "/" + strconv.FormatFloat(float64(v), 'f', 64, 64)
+		url := agentURL + "/update/gauge/" + k + "/" + strconv.FormatFloat(float64(v), 'f', 3, 64)
 
 		response, err := client.R().
 			Post(url)
@@ -85,7 +100,7 @@ func SendRuntimeMetrics(m *agentMetrics.MetricsGauge, cm *agentMetrics.MetricsCo
 	}
 
 	for k, v := range cm.RuntimeMetrics {
-		url := "http://" + agentURL + "/update/counter/" + k + "/" + strconv.Itoa(int(v))
+		url := agentURL + "/update/counter/" + k + "/" + strconv.Itoa(int(v))
 
 		response, err := client.R().
 			Post(url)
