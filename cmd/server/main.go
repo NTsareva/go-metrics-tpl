@@ -100,5 +100,5 @@ func MetricsRouter() chi.Router {
 }
 
 func main() {
-	log.Fatal(http.ListenAndServe("http://"+serverParams.address, MetricsRouter()))
+	log.Fatal(http.ListenAndServe(serverParams.address, MetricsRouter()))
 }
