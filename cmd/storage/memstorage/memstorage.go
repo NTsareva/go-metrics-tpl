@@ -23,12 +23,12 @@ func StringToGauge(s string, bitSize int) (gauge, error) {
 }
 
 func GaugeToStringWithError(gv gauge) (string, error) {
-	value := strconv.FormatFloat(float64(gv), 'f', 1, 64)
+	value := strconv.FormatFloat(float64(gv), 'f', 64, 64)
 	return value, nil
 }
 
 func GaugeToString(gv gauge) string {
-	value := strconv.FormatFloat(float64(gv), 'f', 1, 64)
+	value := strconv.FormatFloat(float64(gv), 'f', 64, 64)
 	return value
 }
 
