@@ -49,7 +49,7 @@ func SendRuntimeMetrics(m *agentMetrics.MetricsGauge, cm *agentMetrics.MetricsCo
 		SetHeader("Accept", "plain/text")
 
 	for k, v := range m.RuntimeMetrics {
-		url := URL + "/update/gauge/" + k + "/" + strconv.FormatFloat(float64(v), 'f', 1, 64)
+		url := URL + "/update/gauge/" + k + "/" + strconv.FormatFloat(float64(v), 'f', 64, 64)
 
 		response, err := client.R().
 			Post(url)
