@@ -1,4 +1,4 @@
-package MemStorage
+package memstorage
 
 import (
 	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage"
@@ -11,7 +11,7 @@ type counter storage.Counter
 
 const (
 	Gauge   string = "gauge"
-	Counter        = "counter"
+	Counter string = "counter"
 )
 
 func StringToGauge(s string, bitSize int) (gauge, error) {

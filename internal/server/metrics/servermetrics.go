@@ -6,7 +6,7 @@ import (
 
 const (
 	Gauge   string = "gauge"
-	Counter        = "counter"
+	Counter string = "counter"
 )
 
 type gauge float64

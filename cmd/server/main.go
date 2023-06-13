@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/MemStorage"
+	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
 	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
 	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 	"github.com/go-chi/chi/v5"
@@ -13,7 +13,7 @@ import (
 
 func main() {
 	r := chi.NewRouter()
-	var ms MemStorage.MemStorage
+	var ms memstorage.MemStorage
 	ms.New()
 
 	r.Post("/update", handlers.NoMetricsTypeHandler)                  //Done
@@ -34,14 +34,14 @@ func main() {
 
 		//Проверяем, что значение соответствует типу
 		sentMetricValue := strings.ToLower(chi.URLParam(req, "value"))
-		if sentMetricType == MemStorage.Gauge {
+		if sentMetricType == memstorage.Gauge {
 			//_, okGauge := ms.GaugeStorage[sentMetric]
 			//
 			//if !okGauge {
 			//	http.Error(res, "unknown type of metrics "+sentMetric, http.StatusNotFound)
 			//}
 
-			val, e := MemStorage.StringToGauge(sentMetricValue, 64)
+			val, e := memstorage.StringToGauge(sentMetricValue, 64)
 			if e != nil {
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
 			}
@@ -51,8 +51,8 @@ func main() {
 
 		//TODO: когда дойдем до каунтеров, сделать проверку, что тип Counter
 
-		if sentMetricType == MemStorage.Counter {
-			val, e := MemStorage.StringToCounter(sentMetricValue)
+		if sentMetricType == memstorage.Counter {
+			val, e := memstorage.StringToCounter(sentMetricValue)
 			if e != nil {
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
 			}
