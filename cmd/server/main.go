@@ -55,11 +55,37 @@ func MetricsRouter() chi.Router {
 
 			ms.CounterStorage[sentMetric] = val
 		}
+
 	})
 
 	r.Get("/", func(res http.ResponseWriter, req *http.Request) {
 		body, _ := ms.PrintAll()
 		io.WriteString(res, body)
+	})
+
+	r.Get("/value/{type}/{metric}", func(res http.ResponseWriter, req *http.Request) {
+		metricType := strings.ToLower(chi.URLParam(req, "type"))
+		if metricType != memstorage.Counter && metricType != memstorage.Gauge {
+			http.Error(res, "incorrect type of metrics", http.StatusNotFound)
+		}
+
+		metric := strings.ToLower(chi.URLParam(req, "metric"))
+		if metricType == memstorage.Counter {
+			metricValue, ok := ms.CounterStorage[metric]
+			if ok {
+				io.WriteString(res, memstorage.CounterToString(metricValue)+"   ")
+			} else {
+				http.Error(res, "no such metric", http.StatusNotFound)
+			}
+		}
+		if metricType == memstorage.Gauge {
+			metricValue, ok := ms.GaugeStorage[metric]
+			if ok {
+				res.Write([]byte(memstorage.GaugeToString(metricValue)))
+			} else {
+				http.Error(res, "no such metric", http.StatusNotFound)
+			}
+		}
 	})
 
 	return r
