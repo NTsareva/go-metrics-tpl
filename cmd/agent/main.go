@@ -30,16 +30,24 @@ func main() {
 	reportInterval := agentParams.reportInterval
 	pollInterval := agentParams.pollInterval
 
+	tempReportInterval := 0
+	tempPollInterval := 0
+
 	//Костыль, запуталась в параллелизме
 	for {
-		for i := 1; i < reportInterval/pollInterval; i++ {
-			metricsRenew(mg, mc)
-			//time.Sleep(pollInterval * time.Second)
-		}
-		metricsRenew(mg, mc)
-		SendRuntimeMetrics(&mg, &mc)
-	}
+		time.Sleep(1 * time.Second)
+		tempPollInterval += 1
+		tempReportInterval += 1
 
+		if tempPollInterval == pollInterval {
+			metricsRenew(mg, mc)
+			tempPollInterval = 0
+		}
+		if tempReportInterval == reportInterval {
+			SendRuntimeMetrics(&mg, &mc)
+			tempReportInterval = 0
+		}
+	}
 }
 
 func metricsRenew(mg agentMetrics.MetricsGauge, mc agentMetrics.MetricsCount) {
