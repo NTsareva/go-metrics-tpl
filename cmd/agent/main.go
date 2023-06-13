@@ -1,5 +1,9 @@
 package main
 
+func main() {
+
+}
+
 //
 //import (
 //	"github.com/NTsareva/go-metrics-tpl.git/internal/metrics"
