@@ -27,6 +27,7 @@ package main
 //	url := URL
 //	for k, v := range m.RuntimeMetrics {
 //		url = url + "/update/gauge/" + k + "/" + strconv.FormatFloat(float64(v), 'f', 1, 64)
+//PollCount++
 //
 //		response, err := http.Post(url, "text/plain", nil)
 //		if err != nil {

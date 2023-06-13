@@ -9,6 +9,19 @@ import (
 type gauge storage.Gauge
 type counter storage.Counter
 
+const (
+	Gauge   string = "gauge"
+	Counter        = "counter"
+)
+
+func StringToGauge(s string, bitSize int) (gauge, error) {
+	v, e := strconv.ParseFloat(s, bitSize)
+	if e != nil {
+		return 0.0, e
+	}
+	return gauge(v), nil
+}
+
 func GaugeToStringWithError(gv gauge) (string, error) {
 	value := strconv.FormatFloat(float64(gv), 'f', 1, 64)
 	return value, nil
@@ -24,59 +37,67 @@ func CounterToString(cv counter) string {
 	return value
 }
 
+func StringToCounter(s string) (counter, error) {
+	value, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, err
+	}
+	return counter(value), nil
+}
+
 // Хотела тут использовать дженерики, но запуталась
 type MemStorage struct {
-	gaugeStorage   map[string]gauge
-	counterStorage map[string]counter
+	GaugeStorage   map[string]gauge
+	CounterStorage map[string]counter
 }
 
 func (ms *MemStorage) New() {
-	ms.gaugeStorage = make(map[string]gauge)
-	ms.counterStorage = make(map[string]counter)
+	ms.GaugeStorage = make(map[string]gauge)
+	ms.CounterStorage = make(map[string]counter)
 
 	metricsGauge := servermetrics.MetricsGauge{}
 	metricsGauge.New()
 
 	for k, v := range metricsGauge.RuntimeMetrics {
-		ms.gaugeStorage[k] = gauge(v)
+		ms.GaugeStorage[k] = gauge(v)
 	}
 
 	metricsCounter := servermetrics.MetricsCount{}
 	metricsCounter.New()
 
 	for k, v := range metricsCounter.RuntimeMetrics {
-		ms.gaugeStorage[k] = gauge(v)
+		ms.GaugeStorage[k] = gauge(v)
 	}
 }
 
 func (ms *MemStorage) SaveGauge(metrics string, value gauge) error {
-	ms.gaugeStorage[metrics] = value
+	ms.GaugeStorage[metrics] = value
 	return nil
 }
 
 func (ms *MemStorage) SaveCounter(metrics string, value counter) error {
-	ms.counterStorage[metrics] = value
+	ms.CounterStorage[metrics] = value
 	return nil
 }
 
 func (ms *MemStorage) Remove(metrics string) error {
-	_, okGauge := ms.gaugeStorage[metrics]
-	_, okCounter := ms.counterStorage[metrics]
+	_, okGauge := ms.GaugeStorage[metrics]
+	_, okCounter := ms.CounterStorage[metrics]
 
 	if okGauge {
-		delete(ms.gaugeStorage, metrics)
+		delete(ms.GaugeStorage, metrics)
 	}
 
 	if okCounter {
-		delete(ms.counterStorage, metrics)
+		delete(ms.CounterStorage, metrics)
 	}
 
 	return nil
 }
 
 func (ms *MemStorage) IfExists(metrics string, value counter) bool {
-	_, okGauge := ms.gaugeStorage[metrics]
-	_, okCounter := ms.counterStorage[metrics]
+	_, okGauge := ms.GaugeStorage[metrics]
+	_, okCounter := ms.CounterStorage[metrics]
 
 	return okGauge || okCounter
 }
@@ -84,12 +105,12 @@ func (ms *MemStorage) IfExists(metrics string, value counter) bool {
 func (ms *MemStorage) PrintAll() (string, error) {
 	outerString := ""
 
-	metricsGauge := ms.gaugeStorage
+	metricsGauge := ms.GaugeStorage
 	for k, v := range metricsGauge {
 		outerString = outerString + k + ": " + GaugeToString(v) + "\n"
 	}
 
-	metricsCounter := ms.counterStorage
+	metricsCounter := ms.CounterStorage
 	for k, v := range metricsCounter {
 		outerString = outerString + k + ": " + CounterToString(v) + "\n"
 	}
