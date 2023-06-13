@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -19,6 +20,10 @@ var serverParams struct {
 
 func init() {
 	flag.StringVar(&serverParams.address, "a", "localhost:8080", "input address")
+
+	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
+		serverParams.address = envRunAddr
+	}
 }
 
 func MetricsRouter() chi.Router {
@@ -54,8 +59,6 @@ func MetricsRouter() chi.Router {
 
 			ms.GaugeStorage[sentMetric] = val
 		}
-
-		//TODO: когда дойдем до каунтеров, сделать проверку, что тип Counter
 
 		if sentMetricType == memstorage.Counter {
 			val, e := memstorage.StringToCounter(sentMetricValue)
