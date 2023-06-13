@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
 	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
 	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
@@ -11,7 +12,13 @@ import (
 	"strings"
 )
 
+var serverParams struct {
+	address string
+}
+
 func MetricsRouter() chi.Router {
+	flag.StringVar(&serverParams.address, "a", "localhost:8080", "input address")
+
 	r := chi.NewRouter()
 	var ms memstorage.MemStorage
 	ms.New()
@@ -93,5 +100,5 @@ func MetricsRouter() chi.Router {
 }
 
 func main() {
-	log.Fatal(http.ListenAndServe(":8080", MetricsRouter()))
+	log.Fatal(http.ListenAndServe(serverParams.address, MetricsRouter()))
 }
