@@ -52,8 +52,9 @@ func MetricsRouter() chi.Router {
 			if e != nil {
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
 			}
+			currentValue := ms.CounterStorage[sentMetric]
 
-			ms.CounterStorage[sentMetric] = val
+			ms.CounterStorage[sentMetric] = currentValue + val
 		}
 
 	})
