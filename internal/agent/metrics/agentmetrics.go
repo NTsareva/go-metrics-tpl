@@ -2,6 +2,7 @@ package agentmetrics
 
 import (
 	"runtime"
+	"strconv"
 )
 
 type gauge float64
@@ -16,6 +17,19 @@ type MetricsGauge struct {
 
 type MetricsCount struct {
 	RuntimeMetrics map[string]counter
+}
+
+func GaugeToString(gv gauge) string {
+	value := strconv.FormatFloat(float64(gv), 'f', 3, 64)
+	if value[len(value)-1] == '0' {
+		value = strconv.FormatFloat(float64(gv), 'f', 2, 64)
+	}
+
+	if value[len(value)-1] == '0' && value[len(value)-2] == '0' {
+		value = strconv.FormatFloat(float64(gv), 'f', 1, 64)
+	}
+
+	return value
 }
 
 func (m *MetricsGauge) New() {

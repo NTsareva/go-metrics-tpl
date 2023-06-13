@@ -1,9 +1,5 @@
 package servermetrics
 
-import (
-	"strconv"
-)
-
 const (
 	Gauge   string = "gauge"
 	Counter string = "counter"
@@ -18,24 +14,6 @@ func IfHasCorrestType(s string) bool {
 	}
 
 	return false
-}
-
-func StringToGauge(s string, bitSize int) (gauge, error) {
-	v, e := strconv.ParseFloat(s, bitSize)
-	if e != nil {
-		return 0.0, e
-	}
-	return gauge(v), nil
-}
-
-func GaugeToStringWithError(gv gauge) (string, error) {
-	value := strconv.FormatFloat(float64(gv), 'f', 2, 64)
-	return value, nil
-}
-
-func GaugeToString(gv gauge) string {
-	value := strconv.FormatFloat(float64(gv), 'f', 2, 64)
-	return value
 }
 
 type MetricsGauge struct {
