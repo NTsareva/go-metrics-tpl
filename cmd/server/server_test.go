@@ -49,6 +49,8 @@ func TestPostRouter(t *testing.T) {
 	}
 	for _, v := range testTable {
 		resp, _ := testRequest(t, ts, "POST", v.url)
+		resp.Body.Close()
+		
 		assert.Equal(t, v.status, resp.StatusCode)
 	}
 }
