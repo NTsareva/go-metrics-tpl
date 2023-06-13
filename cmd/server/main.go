@@ -20,10 +20,6 @@ var serverParams struct {
 
 func init() {
 	flag.StringVar(&serverParams.address, "a", "localhost:8080", "input address")
-
-	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
-		serverParams.address = envRunAddr
-	}
 }
 
 func MetricsRouter() chi.Router {
@@ -107,6 +103,9 @@ func MetricsRouter() chi.Router {
 
 func main() {
 	flag.Parse()
+	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
+		serverParams.address = envRunAddr
+	}
 	log.Fatal(http.ListenAndServe(serverParams.address, MetricsRouter()))
 	fmt.Println(serverParams.address)
 }
