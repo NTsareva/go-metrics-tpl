@@ -51,7 +51,7 @@ func metricsRenew(mg agentMetrics.MetricsGauge, mc agentMetrics.MetricsCount) {
 func SendRuntimeMetrics(m *agentMetrics.MetricsGauge, cm *agentMetrics.MetricsCount) {
 	client := resty.New()
 
-	agentUrl := agentParams.address
+	agentURL := agentParams.address
 
 	client.
 		SetRetryCount(3).
@@ -63,7 +63,7 @@ func SendRuntimeMetrics(m *agentMetrics.MetricsGauge, cm *agentMetrics.MetricsCo
 		SetHeader("Accept", "plain/text")
 
 	for k, v := range m.RuntimeMetrics {
-		url := agentUrl + "/update/gauge/" + k + "/" + strconv.FormatFloat(float64(v), 'f', 64, 64)
+		url := agentURL + "/update/gauge/" + k + "/" + strconv.FormatFloat(float64(v), 'f', 64, 64)
 
 		response, err := client.R().
 			Post(url)
@@ -77,7 +77,7 @@ func SendRuntimeMetrics(m *agentMetrics.MetricsGauge, cm *agentMetrics.MetricsCo
 	}
 
 	for k, v := range cm.RuntimeMetrics {
-		url := agentUrl + "/update/counter/" + k + "/" + strconv.Itoa(int(v))
+		url := "http://" + agentURL + "/update/counter/" + k + "/" + strconv.Itoa(int(v))
 
 		response, err := client.R().
 			Post(url)
