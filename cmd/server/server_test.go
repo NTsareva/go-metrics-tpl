@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -50,7 +50,7 @@ func TestPostRouter(t *testing.T) {
 	for _, v := range testTable {
 		resp, _ := testRequest(t, ts, "POST", v.url)
 		resp.Body.Close()
-		
+
 		assert.Equal(t, v.status, resp.StatusCode)
 	}
 }

@@ -3,15 +3,17 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
-	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
-	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
-	"github.com/go-chi/chi/v5"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
+
+	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
+	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
+	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 )
 
 var serverParams struct {
@@ -24,8 +26,8 @@ func init() {
 
 func MetricsRouter() chi.Router {
 	r := chi.NewRouter()
-	var ms memstorage.MemStorage
-	ms.New()
+	var memStorage memstorage.MemStorage
+	memStorage.New()
 
 	r.Post("/update", handlers.NoMetricsTypeHandler)                  //Done
 	r.Post("/update/", handlers.NoMetricsTypeHandler)                 //Done
@@ -53,7 +55,7 @@ func MetricsRouter() chi.Router {
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
 			}
 
-			ms.GaugeStorage[sentMetric] = val
+			memStorage.GaugeStorage[sentMetric] = val
 		}
 
 		if sentMetricType == memstorage.Counter {
@@ -61,15 +63,15 @@ func MetricsRouter() chi.Router {
 			if e != nil {
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
 			}
-			currentValue := ms.CounterStorage[sentMetric]
+			currentValue := memStorage.CounterStorage[sentMetric]
 
-			ms.CounterStorage[sentMetric] = currentValue + val
+			memStorage.CounterStorage[sentMetric] = currentValue + val
 		}
 
 	})
 
 	r.Get("/", func(res http.ResponseWriter, req *http.Request) {
-		body, _ := ms.PrintAll()
+		body, _ := memStorage.PrintAll()
 		io.WriteString(res, body)
 	})
 
@@ -81,7 +83,7 @@ func MetricsRouter() chi.Router {
 
 		metric := strings.ToLower(chi.URLParam(req, "metric"))
 		if metricType == memstorage.Counter {
-			metricValue, ok := ms.CounterStorage[metric]
+			metricValue, ok := memStorage.CounterStorage[metric]
 			if ok {
 				io.WriteString(res, memstorage.CounterToString(metricValue)+"   ")
 			} else {
@@ -89,7 +91,7 @@ func MetricsRouter() chi.Router {
 			}
 		}
 		if metricType == memstorage.Gauge {
-			metricValue, ok := ms.GaugeStorage[metric]
+			metricValue, ok := memStorage.GaugeStorage[metric]
 			if ok {
 				res.Write([]byte(memstorage.GaugeToString(metricValue)))
 			} else {

@@ -8,8 +8,6 @@ import (
 type gauge float64
 type counter int64
 
-const ReportInterval = 10
-
 type MetricsGauge struct {
 	RuntimeMetrics map[string]gauge
 	RandomValue    gauge

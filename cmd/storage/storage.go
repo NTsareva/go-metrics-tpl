@@ -11,6 +11,5 @@ type Storage interface {
 	SaveGauge(metrics string, value Gauge) error
 	SaveCounter(metrics string, value Counter) error
 	Remove(metric string) error
-	IfExists(metric string) bool
 	PrintAll() (string, error)
 }

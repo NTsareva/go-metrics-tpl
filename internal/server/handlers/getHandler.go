@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
 	"io"
 	"net/http"
+
+	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
 )
 
 func AllMetricsHandler(res http.ResponseWriter, req *http.Request) {

@@ -1,9 +1,10 @@
 package memstorage
 
 import (
+	"strconv"
+
 	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage"
 	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
-	"strconv"
 )
 
 type gauge storage.Gauge
