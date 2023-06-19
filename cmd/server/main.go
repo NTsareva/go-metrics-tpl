@@ -20,10 +20,6 @@ var serverParams struct {
 	address string
 }
 
-func init() {
-	flag.StringVar(&serverParams.address, "a", "localhost:8080", "input address")
-}
-
 func MetricsRouter() chi.Router {
 	r := chi.NewRouter()
 	var memStorage memstorage.MemStorage
@@ -46,26 +42,25 @@ func MetricsRouter() chi.Router {
 
 		sentMetric := strings.ToLower(chi.URLParam(req, "metric"))
 
-		//Проверяем, что значение соответствует типу
 		sentMetricValue := strings.ToLower(chi.URLParam(req, "value"))
-		if sentMetricType == memstorage.Gauge {
+		if sentMetricType == servermetrics.GaugeType {
 
-			val, e := memstorage.StringToGauge(sentMetricValue, 64)
+			val, e := servermetrics.StringToGauge(sentMetricValue, 64)
 			if e != nil {
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
 			}
 
-			memStorage.GaugeStorage[sentMetric] = val
+			memStorage.GaugeStorage[sentMetric] = memstorage.Gauge(val)
 		}
 
-		if sentMetricType == memstorage.Counter {
-			val, e := memstorage.StringToCounter(sentMetricValue)
+		if sentMetricType == servermetrics.CounterType {
+			val, e := servermetrics.StringToCounter(sentMetricValue)
 			if e != nil {
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
 			}
 			currentValue := memStorage.CounterStorage[sentMetric]
 
-			memStorage.CounterStorage[sentMetric] = currentValue + val
+			memStorage.CounterStorage[sentMetric] = currentValue + memstorage.Counter(val)
 		}
 
 	})
@@ -77,23 +72,23 @@ func MetricsRouter() chi.Router {
 
 	r.Get("/value/{type}/{metric}", func(res http.ResponseWriter, req *http.Request) {
 		metricType := strings.ToLower(chi.URLParam(req, "type"))
-		if metricType != memstorage.Counter && metricType != memstorage.Gauge {
+		if metricType != servermetrics.CounterType && metricType != servermetrics.GaugeType {
 			http.Error(res, "incorrect type of metrics", http.StatusNotFound)
 		}
 
 		metric := strings.ToLower(chi.URLParam(req, "metric"))
-		if metricType == memstorage.Counter {
+		if metricType == servermetrics.CounterType {
 			metricValue, ok := memStorage.CounterStorage[metric]
 			if ok {
-				io.WriteString(res, memstorage.CounterToString(metricValue)+"   ")
+				io.WriteString(res, servermetrics.CounterToString(servermetrics.Counter(metricValue))+"   ")
 			} else {
 				http.Error(res, "no such metric", http.StatusNotFound)
 			}
 		}
-		if metricType == memstorage.Gauge {
+		if metricType == servermetrics.GaugeType {
 			metricValue, ok := memStorage.GaugeStorage[metric]
 			if ok {
-				res.Write([]byte(memstorage.GaugeToString(metricValue)))
+				res.Write([]byte(servermetrics.GaugeToString(servermetrics.Gauge(metricValue))))
 			} else {
 				http.Error(res, "no such metric", http.StatusNotFound)
 			}
@@ -104,6 +99,7 @@ func MetricsRouter() chi.Router {
 }
 
 func main() {
+	flag.StringVar(&serverParams.address, "a", "localhost:8080", "input address")
 	flag.Parse()
 	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
 		serverParams.address = envRunAddr

@@ -1,32 +1,68 @@
 package servermetrics
 
+import "strconv"
+
 const (
-	Gauge   string = "gauge"
-	Counter string = "counter"
+	GaugeType   string = "gauge"
+	CounterType string = "counter"
 )
 
-type gauge float64
-type counter int64
+type Gauge float64
+type Counter int64
 
 func IfHasCorrestType(s string) bool {
-	if s == Gauge || s == Counter {
+	if s == GaugeType || s == CounterType {
 		return true
 	}
 
 	return false
 }
 
+func GaugeToString(gaugeValue Gauge) string {
+	value := strconv.FormatFloat(float64(gaugeValue), 'f', 3, 64)
+	if value[len(value)-1] == '0' {
+		value = strconv.FormatFloat(float64(gaugeValue), 'f', 2, 64)
+	}
+
+	if value[len(value)-1] == '0' && value[len(value)-2] == '0' {
+		value = strconv.FormatFloat(float64(gaugeValue), 'f', 1, 64)
+	}
+
+	return value
+}
+
+func StringToGauge(s string, bitSize int) (Gauge, error) {
+	v, e := strconv.ParseFloat(s, bitSize)
+	if e != nil {
+		return 0.0, e
+	}
+	return Gauge(v), nil
+}
+
+func CounterToString(cv Counter) string {
+	value := strconv.Itoa(int(cv))
+	return value
+}
+
+func StringToCounter(s string) (Counter, error) {
+	value, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, err
+	}
+	return Counter(value), nil
+}
+
 type MetricsGauge struct {
-	RuntimeMetrics map[string]gauge
-	RandomValue    gauge
+	RuntimeMetrics map[string]Gauge
+	RandomValue    Gauge
 }
 
 type MetricsCount struct {
-	RuntimeMetrics map[string]counter
+	RuntimeMetrics map[string]Counter
 }
 
 func (mg *MetricsGauge) New() {
-	mg.RuntimeMetrics = make(map[string]gauge)
+	mg.RuntimeMetrics = make(map[string]Gauge)
 	mg.RuntimeMetrics["alloc"] = 0.0
 	mg.RuntimeMetrics["buckhashsys"] = 0.0
 	mg.RuntimeMetrics["frees"] = 0.0
@@ -57,6 +93,6 @@ func (mg *MetricsGauge) New() {
 }
 
 func (mc *MetricsCount) New() {
-	mc.RuntimeMetrics = make(map[string]counter)
+	mc.RuntimeMetrics = make(map[string]Counter)
 	mc.RuntimeMetrics["pollcount"] = 0
 }

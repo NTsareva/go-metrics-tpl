@@ -1,7 +1,9 @@
 package storage
 
-type Gauge float64
-type Counter int64
+import servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
+
+type Gauge servermetrics.Gauge
+type Counter servermetrics.Counter
 
 type MetricType interface {
 	Gauge | Counter

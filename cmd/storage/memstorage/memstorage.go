@@ -1,122 +1,72 @@
 package memstorage
 
 import (
-	"strconv"
-
-	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage"
 	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 )
 
-type gauge storage.Gauge
-type counter storage.Counter
+type Gauge servermetrics.Gauge
+type Counter servermetrics.Counter
 
-const (
-	Gauge   string = "gauge"
-	Counter string = "counter"
-)
-
-func StringToGauge(s string, bitSize int) (gauge, error) {
-	v, e := strconv.ParseFloat(s, bitSize)
-	if e != nil {
-		return 0.0, e
-	}
-	return gauge(v), nil
-}
-
-func GaugeToString(gv gauge) string {
-	value := strconv.FormatFloat(float64(gv), 'f', 3, 64)
-	if value[len(value)-1] == '0' {
-		value = strconv.FormatFloat(float64(gv), 'f', 2, 64)
-	}
-
-	if value[len(value)-1] == '0' && value[len(value)-2] == '0' {
-		value = strconv.FormatFloat(float64(gv), 'f', 1, 64)
-	}
-
-	return value
-}
-
-func CounterToString(cv counter) string {
-	value := strconv.Itoa(int(cv))
-	return value
-}
-
-func StringToCounter(s string) (counter, error) {
-	value, err := strconv.Atoi(s)
-	if err != nil {
-		return 0, err
-	}
-	return counter(value), nil
-}
-
-// Хотела тут использовать дженерики, но запуталась
 type MemStorage struct {
-	GaugeStorage   map[string]gauge
-	CounterStorage map[string]counter
+	GaugeStorage   map[string]Gauge
+	CounterStorage map[string]Counter
 }
 
-func (ms *MemStorage) New() {
-	ms.GaugeStorage = make(map[string]gauge)
-	ms.CounterStorage = make(map[string]counter)
+func (memStorage *MemStorage) New() {
+	memStorage.GaugeStorage = make(map[string]Gauge)
+	memStorage.CounterStorage = make(map[string]Counter)
 
 	metricsGauge := servermetrics.MetricsGauge{}
 	metricsGauge.New()
 
 	for k, v := range metricsGauge.RuntimeMetrics {
-		ms.GaugeStorage[k] = gauge(v)
+		memStorage.GaugeStorage[k] = Gauge(v)
 	}
 
 	metricsCounter := servermetrics.MetricsCount{}
 	metricsCounter.New()
 
 	for k, v := range metricsCounter.RuntimeMetrics {
-		ms.GaugeStorage[k] = gauge(v)
+		memStorage.GaugeStorage[k] = Gauge(v)
 	}
 }
 
-func (ms *MemStorage) SaveGauge(metrics string, value gauge) error {
-	ms.GaugeStorage[metrics] = value
+func (memStorage *MemStorage) SaveGauge(metrics string, value Gauge) error {
+	memStorage.GaugeStorage[metrics] = value
 	return nil
 }
 
-func (ms *MemStorage) SaveCounter(metrics string, value counter) error {
-	ms.CounterStorage[metrics] = value
+func (memStorage *MemStorage) SaveCounter(metrics string, value Counter) error {
+	memStorage.CounterStorage[metrics] = value
 	return nil
 }
 
-func (ms *MemStorage) Remove(metrics string) error {
-	_, okGauge := ms.GaugeStorage[metrics]
-	_, okCounter := ms.CounterStorage[metrics]
+func (memStorage *MemStorage) Remove(metrics string) error {
+	_, okGauge := memStorage.GaugeStorage[metrics]
+	_, okCounter := memStorage.CounterStorage[metrics]
 
 	if okGauge {
-		delete(ms.GaugeStorage, metrics)
+		delete(memStorage.GaugeStorage, metrics)
 	}
 
 	if okCounter {
-		delete(ms.CounterStorage, metrics)
+		delete(memStorage.CounterStorage, metrics)
 	}
 
 	return nil
 }
 
-func (ms *MemStorage) IfExists(metrics string, value counter) bool {
-	_, okGauge := ms.GaugeStorage[metrics]
-	_, okCounter := ms.CounterStorage[metrics]
-
-	return okGauge || okCounter
-}
-
-func (ms *MemStorage) PrintAll() (string, error) {
+func (memStorage *MemStorage) PrintAll() (string, error) {
 	outerString := ""
 
-	metricsGauge := ms.GaugeStorage
+	metricsGauge := memStorage.GaugeStorage
 	for k, v := range metricsGauge {
-		outerString = outerString + k + ": " + GaugeToString(v) + "\n"
+		outerString = outerString + k + ": " + servermetrics.GaugeToString(servermetrics.Gauge(v)) + "\n"
 	}
 
-	metricsCounter := ms.CounterStorage
+	metricsCounter := memStorage.CounterStorage
 	for k, v := range metricsCounter {
-		outerString = outerString + k + ": " + CounterToString(v) + "\n"
+		outerString = outerString + k + ": " + servermetrics.CounterToString(servermetrics.Counter(v)) + "\n"
 	}
 
 	return outerString, nil
