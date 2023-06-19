@@ -86,7 +86,7 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		response, err := postClient.Post(url)
 
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		log.Println(response)
@@ -94,12 +94,12 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 	}
 
 	for k, v := range metricsCount.RuntimeMetrics {
-		url := fmt.Sprintf("http://%s/update/counter/%s/%s", agentURL, k, strconv.Itoa(int(v)))
+		url := fmt.Sprintf("http://%s/update/counter/%s/%s", agentURL, k, agentMetrics.CounterToString(v))
 
 		response, err := postClient.Post(url)
 
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		log.Println(response)

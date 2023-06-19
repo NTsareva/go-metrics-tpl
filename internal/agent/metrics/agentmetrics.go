@@ -30,6 +30,10 @@ func GaugeToString(gv gauge) string {
 	return value
 }
 
+func CounterToString(counterValue counter) string {
+	return strconv.Itoa(int(counterValue))
+}
+
 func (m *MetricsGauge) New() {
 	m.RuntimeMetrics = make(map[string]gauge)
 	m.RuntimeMetrics["alloc"] = 0.0
