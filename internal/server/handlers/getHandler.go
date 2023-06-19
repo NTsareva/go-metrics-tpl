@@ -1,11 +1,13 @@
 package handlers
 
 import (
-	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
-	"github.com/go-chi/chi/v5"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
+
+	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 )
 
 func (serverHandlers *SeverHandlers) AllMetricsHandler(res http.ResponseWriter, req *http.Request) {

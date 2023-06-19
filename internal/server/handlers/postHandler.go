@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 	"net/http"
 	"strings"
 
-	chi "github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5"
 
 	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
+	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 )
 
 type SeverHandlers struct {
