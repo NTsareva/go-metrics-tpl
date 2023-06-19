@@ -11,13 +11,13 @@ import (
 )
 
 type SeverHandlers struct {
-	Chi        *chi.Router
+	Chi        chi.Router
 	MemStorage memstorage.MemStorage
 }
 
-func (severHandlers SeverHandlers) New(chi chi.Router) {
-	severHandlers.Chi = &chi
-	severHandlers.MemStorage.New()
+func (serverHandlers *SeverHandlers) New() {
+	serverHandlers.Chi = chi.NewRouter()
+	serverHandlers.MemStorage.New()
 }
 
 func (serverHandlers *SeverHandlers) NoMetricsTypeHandler(res http.ResponseWriter, req *http.Request) {

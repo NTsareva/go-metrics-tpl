@@ -16,9 +16,9 @@ var serverParams struct {
 }
 
 func MetricsRouter() chi.Router {
-	r := chi.NewRouter()
 	var serverHandlers handlers.SeverHandlers
-	serverHandlers.New(r)
+	serverHandlers.New()
+	r := serverHandlers.Chi
 
 	r.Post("/update", serverHandlers.NoMetricsTypeHandler)                  //Done
 	r.Post("/update/", serverHandlers.NoMetricsTypeHandler)                 //Done
