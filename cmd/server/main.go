@@ -41,6 +41,6 @@ func main() {
 		serverParams.address = envRunAddr
 	}
 
-	log.Fatal(http.ListenAndServe(serverParams.address, MetricsRouter()))
+	log.Print(http.ListenAndServe(serverParams.address, MetricsRouter()))
 	fmt.Println(serverParams.address)
 }
