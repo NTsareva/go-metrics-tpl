@@ -7,10 +7,6 @@ const (
 	CounterType string = "counter"
 )
 
-type MetricsType interface {
-	Gauge | Counter
-}
-
 type Gauge float64
 type Counter int64
 

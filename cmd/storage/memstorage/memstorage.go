@@ -1,17 +1,33 @@
 package memstorage
 
 import (
+	"errors"
 	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 )
 
 type Gauge servermetrics.Gauge
 type Counter servermetrics.Counter
 
+const (
+	GaugeType   string = "gauge"
+	CounterType string = "counter"
+)
+
 type Metrics struct {
 	ID    string   `json:"id"`              // имя метрики
 	MType string   `json:"type"`            // параметр, принимающий значение gauge или counter
 	Delta *int64   `json:"delta,omitempty"` // значение метрики в случае передачи counter
 	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
+}
+
+type Storage interface {
+	New()
+	Save(metrics string, value interface{}) error
+	SaveGauge(metrics string, value Gauge) error
+	SaveCounter(metrics string, value Counter) error
+	Remove(metric string) error
+	PrintAll() (string, error)
+	Get(metrics string) (string, error)
 }
 
 type MemStorage struct {
@@ -34,8 +50,23 @@ func (memStorage *MemStorage) New() {
 	metricsCounter.New()
 
 	for k, v := range metricsCounter.RuntimeMetrics {
-		memStorage.GaugeStorage[k] = Gauge(v)
+		memStorage.CounterStorage[k] = Counter(v)
 	}
+}
+
+func (memStorage *MemStorage) Save(metrics string, value interface{}) error {
+	switch i := value.(type) {
+	case Gauge:
+		memStorage.GaugeStorage[metrics] = i
+		return nil
+	case Counter:
+		memStorage.CounterStorage[metrics] = i
+		return nil
+	default:
+		return errors.New("No such type")
+	}
+
+	return nil
 }
 
 func (memStorage *MemStorage) SaveGauge(metrics string, value Gauge) error {
@@ -61,6 +92,10 @@ func (memStorage *MemStorage) Remove(metrics string) error {
 	}
 
 	return nil
+}
+
+func (memStorage *MemStorage) Get(metric string) (string, error) {
+	return "", nil
 }
 
 func (memStorage *MemStorage) PrintAll() (string, error) {

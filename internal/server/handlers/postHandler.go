@@ -57,7 +57,7 @@ func (serverHandlers *SeverHandlers) MetricsHandler(res http.ResponseWriter, req
 			loggingResponse.WriteHeader(http.StatusBadRequest)
 		}
 
-		serverHandlers.MemStorage.GaugeStorage[sentMetric] = memstorage.Gauge(val)
+		serverHandlers.MemStorage.Save(sentMetric, memstorage.Gauge(val))
 		loggingResponse.WriteHeader(http.StatusOK)
 	}
 
@@ -67,14 +67,18 @@ func (serverHandlers *SeverHandlers) MetricsHandler(res http.ResponseWriter, req
 			http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
 			loggingResponse.WriteHeader(http.StatusBadRequest)
 		}
-		currentValue := serverHandlers.MemStorage.CounterStorage[sentMetric]
 
-		serverHandlers.MemStorage.CounterStorage[sentMetric] = currentValue + memstorage.Counter(val)
+		currentValue, _ := serverHandlers.MemStorage.Get(sentMetric)
+		currentCounterValue, _ := servermetrics.StringToCounter(currentValue)
+
+		counterValue := currentCounterValue + val
+
+		serverHandlers.MemStorage.CounterStorage[sentMetric] = memstorage.Counter(counterValue)
 		loggingResponse.WriteHeader(http.StatusOK)
 	}
 }
 
-func (serverHandlers *SeverHandlers) JsonUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
+func (serverHandlers *SeverHandlers) JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 	metric := servermetrics.Metrics{
 		ID:    "0",
 		MType: "",
@@ -131,6 +135,7 @@ func (serverHandlers *SeverHandlers) JsonUpdateMetricsHandler(res http.ResponseW
 
 		metric.ID = sentMetricName
 		metric.MType = sentMetricType
+
 		if sentMetricType == servermetrics.CounterType {
 			metricDelta := int64(serverHandlers.MemStorage.CounterStorage[sentMetricName])
 			metric.Delta = &metricDelta
@@ -154,7 +159,7 @@ func (serverHandlers *SeverHandlers) JsonUpdateMetricsHandler(res http.ResponseW
 	}
 }
 
-func (serverHandlers *SeverHandlers) JsonGetMetricsHandler(res http.ResponseWriter, req *http.Request) {
+func (serverHandlers *SeverHandlers) JSONGetMetricsHandler(res http.ResponseWriter, req *http.Request) {
 	metric := servermetrics.Metrics{
 		ID:    "0",
 		MType: "",
