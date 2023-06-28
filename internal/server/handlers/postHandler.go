@@ -12,9 +12,6 @@ import (
 	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 )
 
-// Сведения о запросах должны содержать URI, метод запроса и время, затраченное на его выполнение.
-// Сведения об ответах должны содержать код статуса и размер содержимого ответа.
-
 type SeverHandlers struct {
 	Chi        chi.Router
 	MemStorage memstorage.MemStorage
@@ -158,5 +155,54 @@ func (serverHandlers *SeverHandlers) JsonUpdateMetricsHandler(res http.ResponseW
 }
 
 func (serverHandlers *SeverHandlers) JsonGetMetricsHandler(res http.ResponseWriter, req *http.Request) {
+	metric := servermetrics.Metrics{
+		ID:    "0",
+		MType: "",
+		Delta: nil,
+		Value: nil,
+	}
 
+	var sMetrics memstorage.Metrics
+	var buf bytes.Buffer
+
+	if req.Method == http.MethodPost {
+
+		_, err := buf.ReadFrom(req.Body)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusBadRequest)
+			loggingResponse.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if err = json.Unmarshal(buf.Bytes(), &sMetrics); err != nil {
+			http.Error(res, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		sentMetricType := sMetrics.MType
+		sentMetricName := sMetrics.ID
+
+		metric.ID = sentMetricName
+		metric.MType = sentMetricType
+		if sentMetricType == servermetrics.CounterType {
+			metricDelta := int64(serverHandlers.MemStorage.CounterStorage[sentMetricName])
+			metric.Delta = &metricDelta
+			metricValue := 0.0
+			metric.Value = &metricValue
+		} else if sentMetricType == servermetrics.GaugeType {
+			metricDelta := int64(0)
+			metric.Delta = &metricDelta
+			metricValue := float64(serverHandlers.MemStorage.GaugeStorage[sentMetricName])
+			metric.Value = &metricValue
+		}
+
+		resp, err := json.Marshal(metric)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		res.Header().Set("Content-Type", "application/json")
+		res.Write(resp)
+		res.WriteHeader(http.StatusOK)
+	}
 }

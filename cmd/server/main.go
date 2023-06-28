@@ -34,7 +34,7 @@ func MetricsRouter() chi.Router {
 
 	r.Get("/", serverHandlers.AllMetricsHandler)
 	r.Get("/value/{type}/{metric}", serverHandlers.MetricHandler)
-	r.Get("/value/", serverHandlers.JsonGetMetricsHandler)
+	r.Post("/value/", serverHandlers.JsonGetMetricsHandler)
 
 	return r
 }
