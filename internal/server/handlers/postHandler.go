@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -73,5 +75,88 @@ func (serverHandlers *SeverHandlers) MetricsHandler(res http.ResponseWriter, req
 		serverHandlers.MemStorage.CounterStorage[sentMetric] = currentValue + memstorage.Counter(val)
 		loggingResponse.WriteHeader(http.StatusOK)
 	}
+}
+
+func (serverHandlers *SeverHandlers) JsonUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
+	metric := servermetrics.Metrics{
+		ID:    "0",
+		MType: "",
+		Delta: nil,
+		Value: nil,
+	}
+
+	var sMetrics memstorage.Metrics
+	var buf bytes.Buffer
+
+	if req.Method == http.MethodPost {
+
+		_, err := buf.ReadFrom(req.Body)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusBadRequest)
+			loggingResponse.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		// десериализуем JSON
+		if err = json.Unmarshal(buf.Bytes(), &sMetrics); err != nil {
+			http.Error(res, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		sentMetricType := sMetrics.MType
+		sentMetricsGaugeValue := sMetrics.Value
+		sentMetricsCounterValue := sMetrics.Delta
+		sentMetricName := sMetrics.ID
+
+		if !servermetrics.IfHasCorrestType(sentMetricType) {
+			http.Error(res, "incorrect type of metrics "+sentMetricType+" ", http.StatusBadRequest)
+			loggingResponse.WriteHeader(http.StatusBadRequest)
+		}
+		if sentMetricType == servermetrics.GaugeType {
+			if sentMetricsGaugeValue == nil {
+				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
+				loggingResponse.WriteHeader(http.StatusBadRequest)
+			}
+
+			serverHandlers.MemStorage.GaugeStorage[sentMetricName] = memstorage.Gauge(*sentMetricsGaugeValue)
+			loggingResponse.WriteHeader(http.StatusOK)
+		}
+
+		if sentMetricType == servermetrics.CounterType {
+			if sentMetricsCounterValue == nil {
+				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
+				loggingResponse.WriteHeader(http.StatusBadRequest)
+			}
+			currentValue := serverHandlers.MemStorage.CounterStorage[sentMetricName]
+
+			serverHandlers.MemStorage.CounterStorage[sentMetricName] = currentValue + memstorage.Counter(*sentMetricsCounterValue)
+			loggingResponse.WriteHeader(http.StatusOK)
+		}
+
+		metric.ID = sentMetricName
+		metric.MType = sentMetricType
+		if sentMetricType == servermetrics.CounterType {
+			metricDelta := int64(serverHandlers.MemStorage.CounterStorage[sentMetricName])
+			metric.Delta = &metricDelta
+			metricValue := 0.0
+			metric.Value = &metricValue
+		} else if sentMetricType == servermetrics.GaugeType {
+			metricDelta := int64(0)
+			metric.Delta = &metricDelta
+			metricValue := float64(serverHandlers.MemStorage.GaugeStorage[sentMetricName])
+			metric.Value = &metricValue
+		}
+
+		resp, err := json.Marshal(metric)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(http.StatusOK)
+		res.Write(resp)
+	}
+}
+
+func (serverHandlers *SeverHandlers) JsonGetMetricsHandler(res http.ResponseWriter, req *http.Request) {
 
 }

@@ -25,6 +25,7 @@ func MetricsRouter() chi.Router {
 
 	r.Post("/update", serverHandlers.NoMetricsTypeHandler)                  //Done
 	r.Post("/update/", serverHandlers.NoMetricsTypeHandler)                 //Done
+	r.Post("/update/", serverHandlers.JsonUpdateMetricsHandler)             //Done
 	r.Post("/update/{type}", serverHandlers.NoMetricsHandler)               //Done
 	r.Post("/update/{type}/", serverHandlers.NoMetricsHandler)              //Done
 	r.Post("/update/{type}/{metric}", serverHandlers.NoMetricValueHandler)  //Done
@@ -33,6 +34,7 @@ func MetricsRouter() chi.Router {
 
 	r.Get("/", serverHandlers.AllMetricsHandler)
 	r.Get("/value/{type}/{metric}", serverHandlers.MetricHandler)
+	r.Get("/value/", serverHandlers.JsonGetMetricsHandler)
 
 	return r
 }
