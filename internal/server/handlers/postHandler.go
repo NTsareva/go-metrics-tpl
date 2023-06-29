@@ -98,7 +98,7 @@ func (serverHandlers *SeverHandlers) JSONUpdateMetricsHandler(res http.ResponseW
 			loggingResponse.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		// десериализуем JSON
+
 		if err = json.Unmarshal(buf.Bytes(), &sMetrics); err != nil {
 			http.Error(res, err.Error(), http.StatusBadRequest)
 			return

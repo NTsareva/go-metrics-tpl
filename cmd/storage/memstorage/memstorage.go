@@ -28,6 +28,7 @@ type Storage interface {
 	Remove(metric string) error
 	PrintAll() (string, error)
 	Get(metrics string, metricType string) (string, error)
+	IfExist(metrics string, metricType string) (string, error)
 }
 
 type MemStorage struct {
@@ -102,6 +103,21 @@ func (memStorage *MemStorage) Get(metric string, metricType string) (string, err
 		return servermetrics.CounterToString(servermetrics.Counter(metricsCounter[metric])), nil
 	} else {
 		return "", errors.New("Incorrect type, should be Gauge or Counter")
+	}
+}
+
+func (memStorage *MemStorage) IfExists(metric string, metricType string) (string, bool) {
+	metricsGauge := memStorage.GaugeStorage
+	metricsCounter := memStorage.CounterStorage
+
+	if metricType == GaugeType {
+		valGauge, ok := metricsGauge[metric]
+		return servermetrics.GaugeToString(servermetrics.Gauge(valGauge)), ok
+	} else if metricType == CounterType {
+		valCounter, okCounter := metricsCounter[metric]
+		return servermetrics.CounterToString(servermetrics.Counter(valCounter)), okCounter
+	} else {
+		return "", false
 	}
 }
 
