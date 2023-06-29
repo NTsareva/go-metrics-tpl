@@ -26,13 +26,7 @@ func IfHasCorrectType(s string) bool {
 }
 
 func GaugeToString(gaugeValue Gauge) string {
-	value := strconv.FormatFloat(float64(gaugeValue), 'f', 3, 64)
-	if value[len(value)-1] == '0' && value[len(value)-2] == '0' {
-		value = strconv.FormatFloat(float64(gaugeValue), 'f', 1, 64)
-	}
-	if value[len(value)-1] == '0' {
-		value = strconv.FormatFloat(float64(gaugeValue), 'f', 2, 64)
-	}
+	value := strconv.FormatFloat(float64(gaugeValue), 'f', -1, 64)
 
 	return value
 }
