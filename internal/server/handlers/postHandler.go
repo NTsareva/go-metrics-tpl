@@ -162,11 +162,7 @@ func (serverHandlers *SeverHandlers) JSONUpdateMetricsHandler(res http.ResponseW
 
 			int64MetricDelta := int64(intMetricDelta)
 			metric.Delta = &int64MetricDelta
-			metricValue := 0.0
-			metric.Value = &metricValue
 		} else if sentMetricType == servermetrics.GaugeType {
-			metricDelta := int64(0)
-			metric.Delta = &metricDelta
 			metricValue, _ := serverHandlers.MemStorage.Get(sentMetricName, sentMetricType)
 			gaugeMetricValue, _ := servermetrics.StringToGauge(metricValue, 64)
 			floatMetricValue := float64(gaugeMetricValue)
@@ -219,11 +215,7 @@ func (serverHandlers *SeverHandlers) JSONGetMetricsHandler(res http.ResponseWrit
 			intMetricDelta, _ := strconv.Atoi(metricDelta)
 			int64MetricDelta := int64(intMetricDelta)
 			metric.Delta = &int64MetricDelta
-			metricValue := 0.0
-			metric.Value = &metricValue
 		} else if sentMetricType == servermetrics.GaugeType {
-			metricDelta := int64(0)
-			metric.Delta = &metricDelta
 			metricValue, _ := serverHandlers.MemStorage.Get(sentMetricName, sentMetricType)
 			floatMetricValue, _ := strconv.ParseFloat(metricValue, 64)
 			metric.Value = &floatMetricValue
