@@ -24,7 +24,7 @@ func (serverHandlers *SeverHandlers) MetricHandler(res http.ResponseWriter, req 
 	} else {
 		metric := strings.ToLower(chi.URLParam(req, "metric"))
 		if metricType == serverMetrics.CounterType {
-			metricValue, ok := serverHandlers.MemStorage.IfExists(metric, metricType)
+			metricValue, ok := serverHandlers.MemStorage.MetricValueIfExists(metric, metricType)
 			if ok {
 				io.WriteString(res, metricValue+"   ")
 				loggingResponse.WriteHeader(http.StatusOK)
@@ -34,7 +34,7 @@ func (serverHandlers *SeverHandlers) MetricHandler(res http.ResponseWriter, req 
 			}
 		}
 		if metricType == serverMetrics.GaugeType {
-			metricValue, ok := serverHandlers.MemStorage.IfExists(metric, metricType)
+			metricValue, ok := serverHandlers.MemStorage.MetricValueIfExists(metric, metricType)
 			if ok {
 				loggingResponse.Write([]byte(metricValue))
 				loggingResponse.WriteHeader(http.StatusOK)

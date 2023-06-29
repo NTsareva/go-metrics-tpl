@@ -57,11 +57,11 @@ func (memStorage *MemStorage) New() {
 
 func (memStorage *MemStorage) Save(metrics string, value interface{}) error {
 	switch i := value.(type) {
-	case Gauge:
-		memStorage.GaugeStorage[metrics] = i
+	case servermetrics.Gauge:
+		memStorage.GaugeStorage[metrics] = Gauge(i)
 		return nil
-	case Counter:
-		memStorage.CounterStorage[metrics] = i
+	case servermetrics.Counter:
+		memStorage.CounterStorage[metrics] = Counter(i)
 		return nil
 	default:
 		return errors.New("no such type")
@@ -93,28 +93,29 @@ func (memStorage *MemStorage) Remove(metrics string) error {
 	return nil
 }
 
-func (memStorage *MemStorage) Get(metric string, metricType string) (string, error) {
+func (memStorage *MemStorage) Get(metricName string, metricType string) (string, error) {
 	metricsGauge := memStorage.GaugeStorage
 	metricsCounter := memStorage.CounterStorage
 
 	if metricType == GaugeType {
-		return servermetrics.GaugeToString(servermetrics.Gauge(metricsGauge[metric])), nil
+		metricValue := servermetrics.GaugeToString(servermetrics.Gauge(metricsGauge[metricName]))
+		return metricValue, nil
 	} else if metricType == CounterType {
-		return servermetrics.CounterToString(servermetrics.Counter(metricsCounter[metric])), nil
+		return servermetrics.CounterToString(servermetrics.Counter(metricsCounter[metricName])), nil
 	} else {
 		return "", errors.New("Incorrect type, should be Gauge or Counter")
 	}
 }
 
-func (memStorage *MemStorage) IfExists(metric string, metricType string) (string, bool) {
+func (memStorage *MemStorage) MetricValueIfExists(metricName string, metricType string) (string, bool) {
 	metricsGauge := memStorage.GaugeStorage
 	metricsCounter := memStorage.CounterStorage
 
 	if metricType == GaugeType {
-		valGauge, ok := metricsGauge[metric]
-		return servermetrics.GaugeToString(servermetrics.Gauge(valGauge)), ok
+		valGauge, okGauge := metricsGauge[metricName]
+		return servermetrics.GaugeToString(servermetrics.Gauge(valGauge)), okGauge
 	} else if metricType == CounterType {
-		valCounter, okCounter := metricsCounter[metric]
+		valCounter, okCounter := metricsCounter[metricName]
 		return servermetrics.CounterToString(servermetrics.Counter(valCounter)), okCounter
 	} else {
 		return "", false

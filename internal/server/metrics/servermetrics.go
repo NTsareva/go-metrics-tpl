@@ -17,7 +17,7 @@ type Metrics struct {
 	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
 }
 
-func IfHasCorrestType(s string) bool {
+func IfHasCorrectType(s string) bool {
 	if s == GaugeType || s == CounterType {
 		return true
 	}
@@ -27,12 +27,11 @@ func IfHasCorrestType(s string) bool {
 
 func GaugeToString(gaugeValue Gauge) string {
 	value := strconv.FormatFloat(float64(gaugeValue), 'f', 3, 64)
-	if value[len(value)-1] == '0' {
-		value = strconv.FormatFloat(float64(gaugeValue), 'f', 2, 64)
-	}
-
 	if value[len(value)-1] == '0' && value[len(value)-2] == '0' {
 		value = strconv.FormatFloat(float64(gaugeValue), 'f', 1, 64)
+	}
+	if value[len(value)-1] == '0' {
+		value = strconv.FormatFloat(float64(gaugeValue), 'f', 2, 64)
 	}
 
 	return value

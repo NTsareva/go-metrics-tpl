@@ -42,7 +42,7 @@ func (serverHandlers *SeverHandlers) NoMetricValueHandler(res http.ResponseWrite
 func (serverHandlers *SeverHandlers) MetricsHandler(res http.ResponseWriter, req *http.Request) {
 	sentMetricType := strings.ToLower(chi.URLParam(req, "type"))
 
-	if !servermetrics.IfHasCorrestType(sentMetricType) {
+	if !servermetrics.IfHasCorrectType(sentMetricType) {
 		http.Error(res, "incorrect type of metrics "+sentMetricType+" ", http.StatusBadRequest)
 		loggingResponse.WriteHeader(http.StatusBadRequest)
 	}
@@ -58,7 +58,7 @@ func (serverHandlers *SeverHandlers) MetricsHandler(res http.ResponseWriter, req
 			loggingResponse.WriteHeader(http.StatusBadRequest)
 		}
 
-		serverHandlers.MemStorage.Save(sentMetric, memstorage.Gauge(val))
+		serverHandlers.MemStorage.Save(sentMetric, val)
 		loggingResponse.WriteHeader(http.StatusOK)
 	}
 
@@ -74,7 +74,7 @@ func (serverHandlers *SeverHandlers) MetricsHandler(res http.ResponseWriter, req
 
 		counterValue := currentCounterValue + val
 
-		serverHandlers.MemStorage.CounterStorage[sentMetric] = memstorage.Counter(counterValue)
+		serverHandlers.MemStorage.Save(sentMetric, counterValue)
 		loggingResponse.WriteHeader(http.StatusOK)
 	}
 }
@@ -91,7 +91,6 @@ func (serverHandlers *SeverHandlers) JSONUpdateMetricsHandler(res http.ResponseW
 	var buf bytes.Buffer
 
 	if req.Method == http.MethodPost {
-
 		_, err := buf.ReadFrom(req.Body)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusBadRequest)
@@ -109,18 +108,26 @@ func (serverHandlers *SeverHandlers) JSONUpdateMetricsHandler(res http.ResponseW
 		sentMetricsCounterValue := sMetrics.Delta
 		sentMetricName := sMetrics.ID
 
-		if !servermetrics.IfHasCorrestType(sentMetricType) {
+		//Распарсили то, что получили от JSON
+		//Проверили тип
+		//Если тип GAUGE, просто сохранили
+		//Если тип Counter, скастовали, взяли адрес, сохранили
+		//В теле ответа запросили из стораджа, скастовали
+
+		if !servermetrics.IfHasCorrectType(sentMetricType) {
 			http.Error(res, "incorrect type of metrics "+sentMetricType+" ", http.StatusBadRequest)
 			loggingResponse.WriteHeader(http.StatusBadRequest)
 		}
+
 		if sentMetricType == servermetrics.GaugeType {
 			if sentMetricsGaugeValue == nil {
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
 				loggingResponse.WriteHeader(http.StatusBadRequest)
+			} else {
+				storageValue := servermetrics.Gauge(*sentMetricsGaugeValue)
+				serverHandlers.MemStorage.Save(sentMetricName, storageValue)
+				loggingResponse.WriteHeader(http.StatusOK)
 			}
-
-			serverHandlers.MemStorage.GaugeStorage[sentMetricName] = memstorage.Gauge(*sentMetricsGaugeValue)
-			loggingResponse.WriteHeader(http.StatusOK)
 		}
 
 		if sentMetricType == servermetrics.CounterType {
@@ -128,18 +135,26 @@ func (serverHandlers *SeverHandlers) JSONUpdateMetricsHandler(res http.ResponseW
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
 				loggingResponse.WriteHeader(http.StatusBadRequest)
 			}
-			currentValue := serverHandlers.MemStorage.CounterStorage[sentMetricName]
+			//Получили значение в сторадже
+			currentValue, _ := serverHandlers.MemStorage.Get(sentMetricName, servermetrics.CounterType)
+			currentValueCounter, _ := servermetrics.StringToCounter(currentValue)
+			sentValue := servermetrics.Counter(*sentMetricsCounterValue)
 
-			serverHandlers.MemStorage.CounterStorage[sentMetricName] = currentValue + memstorage.Counter(*sentMetricsCounterValue)
+			newCounterValue := currentValueCounter + sentValue
+
+			//Сохранили в мемсторадже
+			serverHandlers.MemStorage.Save(sentMetricName, newCounterValue)
 			loggingResponse.WriteHeader(http.StatusOK)
 		}
 
 		metric.ID = sentMetricName
 		metric.MType = sentMetricType
 
+		//Выдаем полученное в ответе
 		if sentMetricType == servermetrics.CounterType {
 			metricDelta, _ := serverHandlers.MemStorage.Get(sentMetricName, sentMetricType)
-			intMetricDelta, _ := strconv.Atoi(metricDelta)
+			intMetricDelta, _ := servermetrics.StringToCounter(metricDelta)
+
 			int64MetricDelta := int64(intMetricDelta)
 			metric.Delta = &int64MetricDelta
 			metricValue := 0.0
@@ -148,7 +163,8 @@ func (serverHandlers *SeverHandlers) JSONUpdateMetricsHandler(res http.ResponseW
 			metricDelta := int64(0)
 			metric.Delta = &metricDelta
 			metricValue, _ := serverHandlers.MemStorage.Get(sentMetricName, sentMetricType)
-			floatMetricValue, _ := strconv.ParseFloat(metricValue, 64)
+			gaugeMetricValue, _ := servermetrics.StringToGauge(metricValue, 64)
+			floatMetricValue := float64(gaugeMetricValue)
 			metric.Value = &floatMetricValue
 		}
 
