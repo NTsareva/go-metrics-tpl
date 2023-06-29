@@ -27,7 +27,7 @@ type Storage interface {
 	SaveCounter(metrics string, value Counter) error
 	Remove(metric string) error
 	PrintAll() (string, error)
-	Get(metrics string) (string, error)
+	Get(metrics string, metricType string) (string, error)
 }
 
 type MemStorage struct {
@@ -63,10 +63,8 @@ func (memStorage *MemStorage) Save(metrics string, value interface{}) error {
 		memStorage.CounterStorage[metrics] = i
 		return nil
 	default:
-		return errors.New("No such type")
+		return errors.New("no such type")
 	}
-
-	return nil
 }
 
 func (memStorage *MemStorage) SaveGauge(metrics string, value Gauge) error {
@@ -94,8 +92,17 @@ func (memStorage *MemStorage) Remove(metrics string) error {
 	return nil
 }
 
-func (memStorage *MemStorage) Get(metric string) (string, error) {
-	return "", nil
+func (memStorage *MemStorage) Get(metric string, metricType string) (string, error) {
+	metricsGauge := memStorage.GaugeStorage
+	metricsCounter := memStorage.CounterStorage
+
+	if metricType == GaugeType {
+		return servermetrics.GaugeToString(servermetrics.Gauge(metricsGauge[metric])), nil
+	} else if metricType == CounterType {
+		return servermetrics.CounterToString(servermetrics.Counter(metricsCounter[metric])), nil
+	} else {
+		return "", errors.New("Incorrect type, should be Gauge or Counter")
+	}
 }
 
 func (memStorage *MemStorage) PrintAll() (string, error) {

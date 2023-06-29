@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -68,7 +69,7 @@ func (serverHandlers *SeverHandlers) MetricsHandler(res http.ResponseWriter, req
 			loggingResponse.WriteHeader(http.StatusBadRequest)
 		}
 
-		currentValue, _ := serverHandlers.MemStorage.Get(sentMetric)
+		currentValue, _ := serverHandlers.MemStorage.Get(sentMetric, servermetrics.CounterType)
 		currentCounterValue, _ := servermetrics.StringToCounter(currentValue)
 
 		counterValue := currentCounterValue + val
@@ -137,15 +138,18 @@ func (serverHandlers *SeverHandlers) JSONUpdateMetricsHandler(res http.ResponseW
 		metric.MType = sentMetricType
 
 		if sentMetricType == servermetrics.CounterType {
-			metricDelta := int64(serverHandlers.MemStorage.CounterStorage[sentMetricName])
-			metric.Delta = &metricDelta
+			metricDelta, _ := serverHandlers.MemStorage.Get(sentMetricName, sentMetricType)
+			intMetricDelta, _ := strconv.Atoi(metricDelta)
+			int64MetricDelta := int64(intMetricDelta)
+			metric.Delta = &int64MetricDelta
 			metricValue := 0.0
 			metric.Value = &metricValue
 		} else if sentMetricType == servermetrics.GaugeType {
 			metricDelta := int64(0)
 			metric.Delta = &metricDelta
-			metricValue := float64(serverHandlers.MemStorage.GaugeStorage[sentMetricName])
-			metric.Value = &metricValue
+			metricValue, _ := serverHandlers.MemStorage.Get(sentMetricName, sentMetricType)
+			floatMetricValue, _ := strconv.ParseFloat(metricValue, 64)
+			metric.Value = &floatMetricValue
 		}
 
 		resp, err := json.Marshal(metric)
@@ -190,15 +194,18 @@ func (serverHandlers *SeverHandlers) JSONGetMetricsHandler(res http.ResponseWrit
 		metric.ID = sentMetricName
 		metric.MType = sentMetricType
 		if sentMetricType == servermetrics.CounterType {
-			metricDelta := int64(serverHandlers.MemStorage.CounterStorage[sentMetricName])
-			metric.Delta = &metricDelta
+			metricDelta, _ := serverHandlers.MemStorage.Get(sentMetricName, sentMetricType)
+			intMetricDelta, _ := strconv.Atoi(metricDelta)
+			int64MetricDelta := int64(intMetricDelta)
+			metric.Delta = &int64MetricDelta
 			metricValue := 0.0
 			metric.Value = &metricValue
 		} else if sentMetricType == servermetrics.GaugeType {
 			metricDelta := int64(0)
 			metric.Delta = &metricDelta
-			metricValue := float64(serverHandlers.MemStorage.GaugeStorage[sentMetricName])
-			metric.Value = &metricValue
+			metricValue, _ := serverHandlers.MemStorage.Get(sentMetricName, sentMetricType)
+			floatMetricValue, _ := strconv.ParseFloat(metricValue, 64)
+			metric.Value = &floatMetricValue
 		}
 
 		resp, err := json.Marshal(metric)
