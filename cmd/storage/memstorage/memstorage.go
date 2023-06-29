@@ -103,7 +103,7 @@ func (memStorage *MemStorage) Get(metricName string, metricType string) (string,
 	} else if metricType == CounterType {
 		return servermetrics.CounterToString(servermetrics.Counter(metricsCounter[metricName])), nil
 	} else {
-		return "", errors.New("Incorrect type, should be Gauge or Counter")
+		return "", errors.New("incorrect type, should be Gauge or Counter")
 	}
 }
 
