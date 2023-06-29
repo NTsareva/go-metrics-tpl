@@ -78,9 +78,9 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 	agentURL := agentConfig.AgentParams.Address
 
 	client.
-		SetRetryCount(3).
-		SetRetryWaitTime(30 * time.Second).
-		SetRetryMaxWaitTime(90 * time.Second)
+		SetRetryCount(20).
+		SetRetryWaitTime(5 * time.Second).
+		SetRetryMaxWaitTime(180 * time.Second)
 
 	client.
 		SetHeader("Content-Type", "application/json").
@@ -102,11 +102,13 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		response, err := postClient.SetBody(requestBody).Post(url)
 
 		if err != nil {
+			continue
 			log.Print(err)
 		}
 
 		log.Println(response)
 		log.Println(url)
+
 	}
 
 	for k, v := range metricsCount.RuntimeMetrics {
@@ -122,6 +124,7 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		response, err := postClient.SetBody(requestBody).Post(url)
 
 		if err != nil {
+			continue
 			log.Print(err)
 		}
 
