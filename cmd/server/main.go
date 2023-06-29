@@ -17,24 +17,24 @@ var serverParams struct {
 }
 
 func MetricsRouter() chi.Router {
-	var serverHandlers handlers.SeverHandlers
-	serverHandlers.New()
-	r := serverHandlers.Chi
+	handlers.Initialize()
+
+	r := handlers.Chi
 
 	r.Use(handlers.WithLogging)
 
-	r.Post("/update", serverHandlers.NoMetricsTypeHandler)                  //Done
-	r.Post("/update/", serverHandlers.NoMetricsTypeHandler)                 //Done
-	r.Post("/update/", serverHandlers.JSONUpdateMetricsHandler)             //Done
-	r.Post("/update/{type}", serverHandlers.NoMetricsHandler)               //Done
-	r.Post("/update/{type}/", serverHandlers.NoMetricsHandler)              //Done
-	r.Post("/update/{type}/{metric}", serverHandlers.NoMetricValueHandler)  //Done
-	r.Post("/update/{type}/{metric}/", serverHandlers.NoMetricValueHandler) //Done
-	r.Post("/update/{type}/{metric}/{value}", serverHandlers.MetricsHandler)
+	r.Post("/update", handlers.NoMetricsTypeHandler)                  //Done
+	r.Post("/update/", handlers.NoMetricsTypeHandler)                 //Done
+	r.Post("/update/", handlers.JSONUpdateMetricsHandler)             //Done
+	r.Post("/update/{type}", handlers.NoMetricsHandler)               //Done
+	r.Post("/update/{type}/", handlers.NoMetricsHandler)              //Done
+	r.Post("/update/{type}/{metric}", handlers.NoMetricValueHandler)  //Done
+	r.Post("/update/{type}/{metric}/", handlers.NoMetricValueHandler) //Done
+	r.Post("/update/{type}/{metric}/{value}", handlers.MetricsHandler)
 
-	r.Get("/", serverHandlers.AllMetricsHandler)
-	r.Get("/value/{type}/{metric}", serverHandlers.MetricHandler)
-	r.Post("/value/", serverHandlers.JSONGetMetricsHandler)
+	r.Get("/", handlers.AllMetricsHandler)
+	r.Get("/value/{type}/{metric}", handlers.MetricHandler)
+	r.Post("/value/", handlers.JSONGetMetricsHandler)
 
 	return r
 }

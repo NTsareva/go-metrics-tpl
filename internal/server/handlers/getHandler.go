@@ -10,12 +10,12 @@ import (
 	serverMetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 )
 
-func (serverHandlers *SeverHandlers) AllMetricsHandler(res http.ResponseWriter, req *http.Request) {
-	body, _ := serverHandlers.MemStorage.PrintAll()
+func AllMetricsHandler(res http.ResponseWriter, req *http.Request) {
+	body, _ := memStorage.PrintAll()
 	io.WriteString(res, body)
 }
 
-func (serverHandlers *SeverHandlers) MetricHandler(res http.ResponseWriter, req *http.Request) {
+func MetricHandler(res http.ResponseWriter, req *http.Request) {
 	metricType := strings.ToLower(chi.URLParam(req, "type"))
 	if metricType != serverMetrics.CounterType && metricType != serverMetrics.GaugeType {
 		http.Error(res, "incorrect type of metrics", http.StatusNotFound)
@@ -23,7 +23,7 @@ func (serverHandlers *SeverHandlers) MetricHandler(res http.ResponseWriter, req 
 	} else {
 		metric := strings.ToLower(chi.URLParam(req, "metric"))
 		if metricType == serverMetrics.CounterType {
-			metricValue, ok := serverHandlers.MemStorage.MetricValueIfExists(metric, metricType)
+			metricValue, ok := memStorage.MetricValueIfExists(metric, metricType)
 			if ok {
 				io.WriteString(res, metricValue+"   ")
 				loggingResponse.WriteHeader(http.StatusOK)
@@ -36,7 +36,7 @@ func (serverHandlers *SeverHandlers) MetricHandler(res http.ResponseWriter, req 
 		}
 
 		if metricType == serverMetrics.GaugeType {
-			metricValue, ok := serverHandlers.MemStorage.MetricValueIfExists(metric, metricType)
+			metricValue, ok := memStorage.MetricValueIfExists(metric, metricType)
 			if ok {
 				loggingResponse.Write([]byte(metricValue))
 				loggingResponse.WriteHeader(http.StatusOK)
