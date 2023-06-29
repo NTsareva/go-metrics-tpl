@@ -8,6 +8,11 @@ import (
 type gauge float64
 type counter int64
 
+const (
+	GaugeType   string = "gauge"
+	CounterType string = "counter"
+)
+
 type MetricsGauge struct {
 	RuntimeMetrics map[string]gauge
 	RandomValue    gauge

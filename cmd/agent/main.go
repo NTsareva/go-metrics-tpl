@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 	"log"
 	"os"
 	"strconv"
@@ -13,6 +14,13 @@ import (
 	agentConfig "github.com/NTsareva/go-metrics-tpl.git/cmd/agent/config"
 	agentMetrics "github.com/NTsareva/go-metrics-tpl.git/internal/agent/metrics"
 )
+
+type MetricsBody struct {
+	ID    string   `json:"id"`              // имя метрики
+	MType string   `json:"type"`            // параметр, принимающий значение gauge или counter
+	Delta *int64   `json:"delta,omitempty"` // значение метрики в случае передачи counter
+	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
+}
 
 func main() {
 	flag.StringVar(&agentConfig.AgentParams.Address, "a", "localhost:8080", "input address")
@@ -75,15 +83,23 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		SetRetryMaxWaitTime(90 * time.Second)
 
 	client.
-		SetHeader("Content-Type", "plain/text").
-		SetHeader("Accept", "plain/text")
+		SetHeader("Content-Type", "application/json").
+		SetHeader("Accept", "application/json")
+
+	url := fmt.Sprintf("http://%s/update/", agentURL)
 
 	postClient := client.R()
 
 	for k, v := range metricsGauge.RuntimeMetrics {
-		url := fmt.Sprintf("http://%s/update/gauge/%s/%s", agentURL, k, agentMetrics.GaugeToString(v))
-
-		response, err := postClient.Post(url)
+		deltaValue := int64(0)
+		floatGaugeValue, _ := strconv.ParseFloat(agentMetrics.GaugeToString(v), 64)
+		requestBody := MetricsBody{
+			ID:    k,
+			MType: servermetrics.GaugeType,
+			Delta: &deltaValue,
+			Value: &floatGaugeValue,
+		}
+		response, err := postClient.SetBody(requestBody).Post(url)
 
 		if err != nil {
 			log.Print(err)
@@ -94,9 +110,16 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 	}
 
 	for k, v := range metricsCount.RuntimeMetrics {
-		url := fmt.Sprintf("http://%s/update/counter/%s/%s", agentURL, k, agentMetrics.CounterToString(v))
-
-		response, err := postClient.Post(url)
+		deltaValue, _ := strconv.Atoi(agentMetrics.CounterToString(v))
+		int64DeltaValue := int64(deltaValue)
+		floatGaugeValue := 0.0
+		requestBody := MetricsBody{
+			ID:    k,
+			MType: servermetrics.GaugeType,
+			Delta: &int64DeltaValue,
+			Value: &floatGaugeValue,
+		}
+		response, err := postClient.SetBody(requestBody).Post(url)
 
 		if err != nil {
 			log.Print(err)
