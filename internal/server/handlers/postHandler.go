@@ -49,8 +49,8 @@ func (serverHandlers *SeverHandlers) MetricsHandler(res http.ResponseWriter, req
 	}
 
 	sentMetric := strings.ToLower(chi.URLParam(req, "metric"))
-
 	sentMetricValue := strings.ToLower(chi.URLParam(req, "value"))
+
 	if sentMetricType == servermetrics.GaugeType {
 
 		val, e := servermetrics.StringToGauge(sentMetricValue, 64)
@@ -62,9 +62,7 @@ func (serverHandlers *SeverHandlers) MetricsHandler(res http.ResponseWriter, req
 
 		serverHandlers.MemStorage.Save(sentMetric, val)
 		loggingResponse.WriteHeader(http.StatusOK)
-	}
-
-	if sentMetricType == servermetrics.CounterType {
+	} else if sentMetricType == servermetrics.CounterType {
 		val, e := servermetrics.StringToCounter(sentMetricValue)
 		if e != nil {
 			http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
@@ -230,8 +228,10 @@ func (serverHandlers *SeverHandlers) JSONGetMetricsHandler(res http.ResponseWrit
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
 		res.Header().Set("Content-Type", "application/json")
 		res.Write(resp)
 		loggingResponse.WriteHeader(http.StatusOK)
+		return
 	}
 }

@@ -16,7 +16,6 @@ func (serverHandlers *SeverHandlers) AllMetricsHandler(res http.ResponseWriter, 
 }
 
 func (serverHandlers *SeverHandlers) MetricHandler(res http.ResponseWriter, req *http.Request) {
-
 	metricType := strings.ToLower(chi.URLParam(req, "type"))
 	if metricType != serverMetrics.CounterType && metricType != serverMetrics.GaugeType {
 		http.Error(res, "incorrect type of metrics", http.StatusNotFound)
@@ -28,21 +27,25 @@ func (serverHandlers *SeverHandlers) MetricHandler(res http.ResponseWriter, req 
 			if ok {
 				io.WriteString(res, metricValue+"   ")
 				loggingResponse.WriteHeader(http.StatusOK)
+				return
 			} else {
 				http.Error(res, "no such metric", http.StatusNotFound)
 				loggingResponse.WriteHeader(http.StatusNotFound)
+				return
 			}
 		}
+
 		if metricType == serverMetrics.GaugeType {
 			metricValue, ok := serverHandlers.MemStorage.MetricValueIfExists(metric, metricType)
 			if ok {
 				loggingResponse.Write([]byte(metricValue))
 				loggingResponse.WriteHeader(http.StatusOK)
+				return
 			} else {
 				http.Error(res, "no such metric", http.StatusNotFound)
 				loggingResponse.WriteHeader(http.StatusNotFound)
+				return
 			}
 		}
 	}
-
 }
