@@ -1,17 +1,13 @@
 package agentmetrics
 
 import (
+	"math/rand"
 	"runtime"
 	"strconv"
 )
 
 type gauge float64
 type counter int64
-
-const (
-	GaugeType   string = "gauge"
-	CounterType string = "counter"
-)
 
 type MetricsGauge struct {
 	RuntimeMetrics map[string]gauge
@@ -64,6 +60,7 @@ func (m *MetricsGauge) New() {
 	m.RuntimeMetrics["numc"] = 0.0
 	m.RuntimeMetrics["othersys"] = 0.0
 	m.RuntimeMetrics["pausetotalns"] = 0.0
+	m.RuntimeMetrics["randomvalue"] = 0.0
 	m.RuntimeMetrics["stackinuse"] = 0.0
 	m.RuntimeMetrics["stacksys"] = 0.0
 	m.RuntimeMetrics["sys"] = 0.0
@@ -97,6 +94,7 @@ func (m *MetricsGauge) Renew() {
 	m.RuntimeMetrics["numgc"] = gauge(ms.NumGC)
 	m.RuntimeMetrics["othersys"] = gauge(ms.OtherSys)
 	m.RuntimeMetrics["pausetotalns"] = gauge(ms.PauseTotalNs)
+	m.RuntimeMetrics["randomvalue"] = gauge(rand.Float64())
 	m.RuntimeMetrics["stackinuse"] = gauge(ms.StackInuse)
 	m.RuntimeMetrics["stacksys"] = gauge(ms.StackSys)
 	m.RuntimeMetrics["sys"] = gauge(ms.Sys)

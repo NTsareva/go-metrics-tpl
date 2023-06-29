@@ -115,7 +115,7 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		floatGaugeValue := 0.0
 		requestBody := MetricsBody{
 			ID:    k,
-			MType: servermetrics.GaugeType,
+			MType: servermetrics.CounterType,
 			Delta: &int64DeltaValue,
 			Value: &floatGaugeValue,
 		}
