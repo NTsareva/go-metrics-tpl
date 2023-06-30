@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -173,6 +174,9 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		log.Printf(string(resp))
+
 		res.Header().Set("Content-Type", "application/json")
 		res.Write(resp)
 		loggingResponse.WriteStatusCode(http.StatusOK)
@@ -231,8 +235,11 @@ func JSONGetMetricsHandler(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		log.Printf(string(resp))
+
 		res.Header().Set("Content-Type", "application/json")
 		res.Write(resp)
+
 		loggingResponse.WriteStatusCode(http.StatusOK)
 		return
 	}
