@@ -11,7 +11,7 @@ import (
 )
 
 func AllMetricsHandler(res http.ResponseWriter, req *http.Request) {
-	body, _ := MemStorage.PrintAll()
+	body, _ := memStorage.PrintAll()
 	io.WriteString(res, body)
 }
 
@@ -23,7 +23,7 @@ func MetricHandler(res http.ResponseWriter, req *http.Request) {
 	} else {
 		metric := strings.ToLower(chi.URLParam(req, "metric"))
 		if metricType == serverMetrics.CounterType {
-			metricValue, ok := MemStorage.MetricValueIfExists(metric, metricType)
+			metricValue, ok := memStorage.MetricValueIfExists(metric, metricType)
 			if ok {
 				io.WriteString(res, metricValue+"   ")
 				loggingResponse.WriteStatusCode(http.StatusOK)
@@ -34,7 +34,7 @@ func MetricHandler(res http.ResponseWriter, req *http.Request) {
 				return
 			}
 		} else if metricType == serverMetrics.GaugeType {
-			metricValue, ok := MemStorage.MetricValueIfExists(metric, metricType)
+			metricValue, ok := memStorage.MetricValueIfExists(metric, metricType)
 			if ok {
 				loggingResponse.Write([]byte(metricValue))
 				loggingResponse.Header()

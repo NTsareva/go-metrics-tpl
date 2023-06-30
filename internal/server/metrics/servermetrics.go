@@ -102,9 +102,7 @@ type MetricsCount struct {
 
 func (mg *MetricsGauge) New() {
 	mg.RuntimeMetrics = make(map[string]Gauge)
-	metricsNames := make(map[string]string)
-
-	metricsNames = GetGaugeMetricsResponseNames()
+	metricsNames := GetGaugeMetricsResponseNames()
 
 	for _, v := range metricsNames {
 		mg.RuntimeMetrics[v] = 0.0
@@ -113,8 +111,7 @@ func (mg *MetricsGauge) New() {
 
 func (mc *MetricsCount) New() {
 	mc.RuntimeMetrics = make(map[string]Counter)
-	metricsNames := make(map[string]string)
-	metricsNames = GetCounterMetricsResponseNames()
+	metricsNames := GetCounterMetricsResponseNames()
 	for _, v := range metricsNames {
 		mc.RuntimeMetrics[v] = 0
 	}
