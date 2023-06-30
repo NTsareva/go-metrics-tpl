@@ -36,10 +36,14 @@ type MemStorage struct {
 	CounterStorage map[string]Counter
 }
 
-func (memStorage *MemStorage) New() {
-	memStorage.GaugeStorage = make(map[string]Gauge)
-	memStorage.CounterStorage = make(map[string]Counter)
+func (memStorage *MemStorage) Initialize() *MemStorage {
+	return &MemStorage{
+		GaugeStorage:   make(map[string]Gauge),
+		CounterStorage: make(map[string]Counter),
+	}
+}
 
+func (memStorage *MemStorage) New() {
 	metricsGauge := servermetrics.MetricsGauge{}
 	metricsGauge.New()
 

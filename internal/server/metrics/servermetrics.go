@@ -25,6 +25,45 @@ func IfHasCorrectType(s string) bool {
 	return false
 }
 
+func GetGaugeMetricsResponseNames() map[string]string {
+	mapOfMetricsNames := make(map[string]string)
+	mapOfMetricsNames["alloc"] = "Alloc"
+	mapOfMetricsNames["buckhashsys"] = "BuckHashSys"
+	mapOfMetricsNames["frees"] = "Frees"
+	mapOfMetricsNames["gccpufraction"] = "GCCPUFraction"
+	mapOfMetricsNames["gcsys"] = "GCSys"
+	mapOfMetricsNames["heapalloc"] = "HeapAlloc"
+	mapOfMetricsNames["heapidle"] = "HeapIdle"
+	mapOfMetricsNames["heapinuse"] = "HeapInuse"
+	mapOfMetricsNames["heapobjects"] = "HeapObjects"
+	mapOfMetricsNames["heapreleased"] = "HeapReleased"
+	mapOfMetricsNames["heapsys"] = "HeapSys"
+	mapOfMetricsNames["lastgc"] = "LastGC"
+	mapOfMetricsNames["lookups"] = "Lookups"
+	mapOfMetricsNames["mcacheinuse"] = "MCacheInuse"
+	mapOfMetricsNames["mcachesys"] = "MCacheSys"
+	mapOfMetricsNames["mspaninuse"] = "MSpanInuse"
+	mapOfMetricsNames["mspansys"] = "MSpanSys"
+	mapOfMetricsNames["mallocs"] = "Mallocs"
+	mapOfMetricsNames["nextgc"] = "NextGC"
+	mapOfMetricsNames["numforcedgc"] = "NumForcedGC"
+	mapOfMetricsNames["numgc"] = "NumGC"
+	mapOfMetricsNames["othersys"] = "OtherSys"
+	mapOfMetricsNames["pausetotalns"] = "PauseTotalNs"
+	mapOfMetricsNames["stackinuse"] = "StackInuse"
+	mapOfMetricsNames["stacksys"] = "StackSys"
+	mapOfMetricsNames["sys"] = "Sys"
+	mapOfMetricsNames["totalalloc"] = "TotalAlloc"
+	mapOfMetricsNames["randomvalue"] = "RandomValue"
+	return mapOfMetricsNames
+}
+
+func GetCounterMetricsResponseNames() map[string]string {
+	mapOfMetricsNames := make(map[string]string)
+	mapOfMetricsNames["PollCount"] = "PollCount"
+	return mapOfMetricsNames
+}
+
 func GaugeToString(gaugeValue Gauge) string {
 	value := strconv.FormatFloat(float64(gaugeValue), 'f', -1, 64)
 
@@ -63,36 +102,20 @@ type MetricsCount struct {
 
 func (mg *MetricsGauge) New() {
 	mg.RuntimeMetrics = make(map[string]Gauge)
-	mg.RuntimeMetrics["alloc"] = 0.0
-	mg.RuntimeMetrics["buckhashsys"] = 0.0
-	mg.RuntimeMetrics["frees"] = 0.0
-	mg.RuntimeMetrics["gccpufraction"] = 0.0
-	mg.RuntimeMetrics["gcsys"] = 0.0
-	mg.RuntimeMetrics["heapalloc"] = 0.0
-	mg.RuntimeMetrics["heapidle"] = 0.0
-	mg.RuntimeMetrics["heapinuse"] = 0.0
-	mg.RuntimeMetrics["heapobjects"] = 0.0
-	mg.RuntimeMetrics["heapreleased"] = 0.0
-	mg.RuntimeMetrics["heapsys"] = 0.0
-	mg.RuntimeMetrics["lastgc"] = 0.0
-	mg.RuntimeMetrics["lookups"] = 0.0
-	mg.RuntimeMetrics["mccacheinuse"] = 0.0
-	mg.RuntimeMetrics["mcachesys"] = 0.0
-	mg.RuntimeMetrics["mspaninuse"] = 0.0
-	mg.RuntimeMetrics["mspansys"] = 0.0
-	mg.RuntimeMetrics["mallocs"] = 0.0
-	mg.RuntimeMetrics["nextgc"] = 0.0
-	mg.RuntimeMetrics["numcorcedgc"] = 0.0
-	mg.RuntimeMetrics["numgc"] = 0.0
-	mg.RuntimeMetrics["othersys"] = 0.0
-	mg.RuntimeMetrics["pausetotalns"] = 0.0
-	mg.RuntimeMetrics["stackinuse"] = 0.0
-	mg.RuntimeMetrics["stacksys"] = 0.0
-	mg.RuntimeMetrics["sys"] = 0.0
-	mg.RuntimeMetrics["totalalloc"] = 0.0
+	metricsNames := make(map[string]string)
+
+	metricsNames = GetGaugeMetricsResponseNames()
+
+	for _, v := range metricsNames {
+		mg.RuntimeMetrics[v] = 0.0
+	}
 }
 
 func (mc *MetricsCount) New() {
 	mc.RuntimeMetrics = make(map[string]Counter)
-	mc.RuntimeMetrics["pollcount"] = 0
+	metricsNames := make(map[string]string)
+	metricsNames = GetCounterMetricsResponseNames()
+	for _, v := range metricsNames {
+		mc.RuntimeMetrics[v] = 0
+	}
 }

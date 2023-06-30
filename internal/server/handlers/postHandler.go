@@ -14,12 +14,19 @@ import (
 	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 )
 
-var memStorage memstorage.MemStorage
+var MemStorage memstorage.MemStorage
+
 var Chi chi.Router
 
 func Initialize() {
 	Chi = chi.NewRouter()
-	memStorage.New()
+
+	if MemStorage.GaugeStorage == nil || MemStorage.CounterStorage == nil {
+		MemStorage.GaugeStorage = make(map[string]memstorage.Gauge)
+		MemStorage.CounterStorage = make(map[string]memstorage.Counter)
+
+		MemStorage.New()
+	}
 }
 
 func NoMetricsTypeHandler(res http.ResponseWriter, req *http.Request) {
@@ -47,10 +54,13 @@ func MetricsHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	//TODO: Делать проверку на нахождении в словаре
 	sentMetric := strings.ToLower(chi.URLParam(req, "metric"))
 	sentMetricValue := strings.ToLower(chi.URLParam(req, "value"))
 
 	if sentMetricType == servermetrics.GaugeType {
+		gaugeNamesDictionary := servermetrics.GetGaugeMetricsResponseNames()
+		gaugeNameInDictionary, ok := gaugeNamesDictionary[sentMetric]
 
 		val, e := servermetrics.StringToGauge(sentMetricValue, 64)
 		if e != nil {
@@ -59,9 +69,17 @@ func MetricsHandler(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		memStorage.Save(sentMetric, val)
+		if ok {
+			MemStorage.Save(gaugeNameInDictionary, val)
+		} else {
+			MemStorage.Save(sentMetric, val)
+		}
+
 		loggingResponse.WriteHeader(http.StatusOK)
 	} else if sentMetricType == servermetrics.CounterType {
+		counterNamesDictionary := servermetrics.GetCounterMetricsResponseNames()
+		counterNameInDictionary, ok := counterNamesDictionary[sentMetric]
+
 		val, e := servermetrics.StringToCounter(sentMetricValue)
 		if e != nil {
 			http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
@@ -69,13 +87,23 @@ func MetricsHandler(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		currentValue, _ := memStorage.Get(sentMetric, servermetrics.CounterType)
-		currentCounterValue, _ := servermetrics.StringToCounter(currentValue)
+		if ok {
+			currentValue, _ := MemStorage.Get(counterNameInDictionary, servermetrics.CounterType)
+			currentCounterValue, _ := servermetrics.StringToCounter(currentValue)
 
-		counterValue := currentCounterValue + val
+			counterValue := currentCounterValue + val
 
-		memStorage.Save(sentMetric, counterValue)
-		loggingResponse.WriteHeader(http.StatusOK)
+			MemStorage.Save(counterNameInDictionary, counterValue)
+			loggingResponse.WriteHeader(http.StatusOK)
+		} else {
+			currentValue, _ := MemStorage.Get(sentMetric, servermetrics.CounterType)
+			currentCounterValue, _ := servermetrics.StringToCounter(currentValue)
+
+			counterValue := currentCounterValue + val
+
+			MemStorage.Save(sentMetric, counterValue)
+			loggingResponse.WriteHeader(http.StatusOK)
+		}
 	}
 }
 
@@ -132,7 +160,7 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 				return
 			} else {
 				storageValue := servermetrics.Gauge(*sentMetricsGaugeValue)
-				memStorage.Save(sentMetricName, storageValue)
+				MemStorage.Save(sentMetricName, storageValue)
 			}
 		} else if sentMetricType == servermetrics.CounterType {
 			if sentMetricsCounterValue == nil {
@@ -141,7 +169,7 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 				return
 			}
 			//Получили значение в сторадже
-			currentValue, _ := memStorage.Get(sentMetricName, servermetrics.CounterType)
+			currentValue, _ := MemStorage.Get(sentMetricName, servermetrics.CounterType)
 			currentValueCounter, _ := servermetrics.StringToCounter(currentValue)
 
 			sentValue := servermetrics.Counter(*sentMetricsCounterValue)
@@ -149,7 +177,7 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 			newCounterValue := currentValueCounter + sentValue
 
 			//Сохранили в мемсторадже
-			memStorage.Save(sentMetricName, newCounterValue)
+			MemStorage.Save(sentMetricName, newCounterValue)
 		}
 
 		metric.ID = sentMetricName
@@ -157,13 +185,13 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 
 		//Выдаем полученное в ответе
 		if sentMetricType == servermetrics.CounterType {
-			metricDelta, _ := memStorage.Get(sentMetricName, sentMetricType)
+			metricDelta, _ := MemStorage.Get(sentMetricName, sentMetricType)
 			intMetricDelta, _ := servermetrics.StringToCounter(metricDelta)
 
 			int64MetricDelta := int64(intMetricDelta)
 			metric.Delta = &int64MetricDelta
 		} else if sentMetricType == servermetrics.GaugeType {
-			metricValue, _ := memStorage.Get(sentMetricName, sentMetricType)
+			metricValue, _ := MemStorage.Get(sentMetricName, sentMetricType)
 			gaugeMetricValue, _ := servermetrics.StringToGauge(metricValue, 64)
 			floatMetricValue := float64(gaugeMetricValue)
 			metric.Value = &floatMetricValue
@@ -218,12 +246,12 @@ func JSONGetMetricsHandler(res http.ResponseWriter, req *http.Request) {
 		metric.ID = sentMetricName
 		metric.MType = sentMetricType
 		if sentMetricType == servermetrics.CounterType {
-			metricDelta, _ := memStorage.Get(sentMetricName, sentMetricType)
+			metricDelta, _ := MemStorage.Get(sentMetricName, sentMetricType)
 			intMetricDelta, _ := strconv.Atoi(metricDelta)
 			int64MetricDelta := int64(intMetricDelta)
 			metric.Delta = &int64MetricDelta
 		} else if sentMetricType == servermetrics.GaugeType {
-			metricValue, _ := memStorage.Get(sentMetricName, sentMetricType)
+			metricValue, _ := MemStorage.Get(sentMetricName, sentMetricType)
 			floatMetricValue, _ := strconv.ParseFloat(metricValue, 64)
 			metric.Value = &floatMetricValue
 		}
