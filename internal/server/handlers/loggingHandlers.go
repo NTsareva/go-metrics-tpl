@@ -36,7 +36,7 @@ func WithLogging(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger, err := zap.NewDevelopment()
 		if err != nil {
-			log.Print(err)
+			log.Print(err, "#7")
 		}
 
 		defer logger.Sync()

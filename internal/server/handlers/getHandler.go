@@ -33,9 +33,7 @@ func MetricHandler(res http.ResponseWriter, req *http.Request) {
 				loggingResponse.WriteHeader(http.StatusNotFound)
 				return
 			}
-		}
-
-		if metricType == serverMetrics.GaugeType {
+		} else if metricType == serverMetrics.GaugeType {
 			metricValue, ok := memStorage.MetricValueIfExists(metric, metricType)
 			if ok {
 				loggingResponse.Write([]byte(metricValue))

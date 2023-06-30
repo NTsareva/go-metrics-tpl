@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -24,7 +23,6 @@ func MetricsRouter() chi.Router {
 	r.Use(handlers.WithLogging)
 
 	r.Post("/update", handlers.NoMetricsTypeHandler)                  //Done
-	r.Post("/update/", handlers.NoMetricsTypeHandler)                 //Done
 	r.Post("/update/", handlers.JSONUpdateMetricsHandler)             //Done
 	r.Post("/update/{type}", handlers.NoMetricsHandler)               //Done
 	r.Post("/update/{type}/", handlers.NoMetricsHandler)              //Done
@@ -42,7 +40,7 @@ func MetricsRouter() chi.Router {
 func main() {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		log.Print(err)
+		log.Print(err, "#1")
 	}
 
 	addr := "localhost:8080"
@@ -62,8 +60,6 @@ func main() {
 	}
 
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
-		sugar.Fatalw(err.Error(), "event", "start server")
+		sugar.Fatalf(err.Error(), "event", "start server")
 	}
-
-	fmt.Println(serverParams.address)
 }

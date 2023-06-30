@@ -93,12 +93,13 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 		_, err := buf.ReadFrom(req.Body)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusBadRequest)
-			loggingResponse.WriteHeader(http.StatusBadRequest)
+			//loggingResponse.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		if err = json.Unmarshal(buf.Bytes(), &sMetrics); err != nil {
+		if err := json.Unmarshal(buf.Bytes(), &sMetrics); err != nil {
 			http.Error(res, err.Error(), http.StatusBadRequest)
+			//loggingResponse.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
@@ -115,32 +116,29 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 
 		if !servermetrics.IfHasCorrectType(sentMetricType) {
 			http.Error(res, "incorrect type of metrics "+sentMetricType+" ", http.StatusBadRequest)
-			loggingResponse.WriteHeader(http.StatusBadRequest)
+			//loggingResponse.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		if sentMetricType == servermetrics.GaugeType {
 			if sentMetricsGaugeValue == nil {
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
-				loggingResponse.WriteHeader(http.StatusBadRequest)
+				//loggingResponse.WriteHeader(http.StatusBadRequest)
 				return
 			} else {
 				storageValue := servermetrics.Gauge(*sentMetricsGaugeValue)
 				memStorage.Save(sentMetricName, storageValue)
 			}
-		}
-
-		if sentMetricType == servermetrics.CounterType {
+		} else if sentMetricType == servermetrics.CounterType {
 			if sentMetricsCounterValue == nil {
 				http.Error(res, "incorrect value of metrics", http.StatusBadRequest)
-				loggingResponse.WriteHeader(http.StatusBadRequest)
+				//loggingResponse.WriteHeader(http.StatusBadRequest)
 				return
 			}
 			//Получили значение в сторадже
 			currentValue, _ := memStorage.Get(sentMetricName, servermetrics.CounterType)
 			currentValueCounter, _ := servermetrics.StringToCounter(currentValue)
-			var sentValue servermetrics.Counter
-			sentValue = servermetrics.Counter(*sentMetricsCounterValue)
+			sentValue := servermetrics.Counter(*sentMetricsCounterValue)
 
 			newCounterValue := currentValueCounter + sentValue
 
@@ -192,7 +190,7 @@ func JSONGetMetricsHandler(res http.ResponseWriter, req *http.Request) {
 		_, err := buf.ReadFrom(req.Body)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusBadRequest)
-			loggingResponse.WriteHeader(http.StatusBadRequest)
+			//loggingResponse.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
