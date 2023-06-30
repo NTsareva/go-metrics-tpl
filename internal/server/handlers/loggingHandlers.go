@@ -30,6 +30,10 @@ func (r *LoggingResponseWriter) WriteHeader(statusCode int) {
 	r.ResponseWriter.WriteHeader(statusCode)
 }
 
+func (r *LoggingResponseWriter) WriteStatusCode(statusCode int) {
+	r.responseData.status = statusCode
+}
+
 var loggingResponse = LoggingResponseWriter{responseData: nil}
 
 func WithLogging(h http.Handler) http.Handler {
