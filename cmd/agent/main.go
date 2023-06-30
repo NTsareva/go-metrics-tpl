@@ -88,8 +88,9 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 
 	url := fmt.Sprintf("http://%s/update/", agentURL)
 
+	postClient := client.R()
+
 	for k, v := range metricsGauge.RuntimeMetrics {
-		postClient := client.R()
 		deltaValue := int64(0)
 		floatGaugeValue, _ := strconv.ParseFloat(agentMetrics.GaugeToString(v), 64)
 		requestBody := MetricsBody{
@@ -101,17 +102,17 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		response, err := postClient.SetBody(requestBody).Post(url)
 
 		if err != nil {
-			log.Print(err, "#3")
+
 			continue
+			log.Print(err)
 		}
 
-		log.Println(response, "#4")
-		log.Println(url, "#5")
+		log.Println(response)
+		log.Println(url)
 
 	}
 
 	for k, v := range metricsCount.RuntimeMetrics {
-		postClient := client.R()
 		deltaValue, _ := strconv.Atoi(agentMetrics.CounterToString(v))
 		int64DeltaValue := int64(deltaValue)
 		floatGaugeValue := 0.0
@@ -124,8 +125,11 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		response, err := postClient.SetBody(requestBody).Post(url)
 
 		if err != nil {
-			log.Print(err, "#6")
+
+			log.Print(err)
+
 			continue
+			log.Print(err)
 		}
 
 		log.Println(response)
