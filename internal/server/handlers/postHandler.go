@@ -141,12 +141,6 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 
 			sentValue := servermetrics.Counter(*sentMetricsCounterValue)
 
-			if sentMetricsCounterValue != nil {
-				sentValue = servermetrics.Counter(*sentMetricsCounterValue)
-			} else {
-				sentValue = 0
-			}
-
 			newCounterValue := currentValueCounter + sentValue
 
 			//Сохранили в мемсторадже

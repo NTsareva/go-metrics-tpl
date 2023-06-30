@@ -27,7 +27,7 @@ func (r *LoggingResponseWriter) Write(b []byte) (int, error) {
 
 func (r *LoggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode
-	//r.ResponseWriter.WriteHeader(statusCode)
+	r.ResponseWriter.WriteHeader(statusCode)
 }
 
 var loggingResponse = LoggingResponseWriter{responseData: nil}

@@ -102,9 +102,8 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		response, err := postClient.SetBody(requestBody).Post(url)
 
 		if err != nil {
-
-			continue
 			log.Print(err)
+			continue
 		}
 
 		log.Println(response)
@@ -127,9 +126,7 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		if err != nil {
 
 			log.Print(err)
-
 			continue
-			log.Print(err)
 		}
 
 		log.Println(response)
