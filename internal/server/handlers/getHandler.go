@@ -26,7 +26,7 @@ func MetricHandler(res http.ResponseWriter, req *http.Request) {
 			metricValue, ok := memStorage.MetricValueIfExists(metric, metricType)
 			if ok {
 				io.WriteString(res, metricValue+"   ")
-				loggingResponse.WriteHeader(http.StatusOK)
+				loggingResponse.WriteStatusCode(http.StatusOK)
 				return
 			} else {
 				http.Error(res, "no such metric", http.StatusNotFound)
@@ -37,7 +37,8 @@ func MetricHandler(res http.ResponseWriter, req *http.Request) {
 			metricValue, ok := memStorage.MetricValueIfExists(metric, metricType)
 			if ok {
 				loggingResponse.Write([]byte(metricValue))
-				loggingResponse.WriteHeader(http.StatusOK)
+				loggingResponse.Header()
+				loggingResponse.WriteStatusCode(http.StatusOK)
 				return
 			} else {
 				http.Error(res, "no such metric", http.StatusNotFound)

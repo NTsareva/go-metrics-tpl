@@ -89,6 +89,9 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 	var sMetrics memstorage.Metrics
 	var buf bytes.Buffer
 
+	res.Header().Add("Content-Type", "application/json")
+	res.Header().Set("Content-Type", "application/json")
+
 	if req.Method == http.MethodPost {
 		_, err := buf.ReadFrom(req.Body)
 		if err != nil {
@@ -182,6 +185,8 @@ func JSONGetMetricsHandler(res http.ResponseWriter, req *http.Request) {
 		Delta: nil,
 		Value: nil,
 	}
+
+	res.Header().Add("Content-Type", "application/json")
 
 	var sMetrics memstorage.Metrics
 	var buf bytes.Buffer
