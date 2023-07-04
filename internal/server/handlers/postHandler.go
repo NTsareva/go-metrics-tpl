@@ -116,8 +116,6 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 	var sMetrics memstorage.Metrics
 	var buf bytes.Buffer
 
-	res.Header().Add("Content-Type", "application/json")
-	res.Header().Set("Content-Type", "application/json")
 	res.Header().Set("Connection", "Keep-Alive")
 
 	if req.Method == http.MethodPost {
@@ -195,10 +193,26 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		res.Header().Set("Content-Type", "application/json")
+		reqHeader := req.Header.Get("Content-Type")
+
+		if res.Header().Get("Content-Type") == "" {
+			res.Header().Add("Content-Type", reqHeader)
+		}
+
+		res.Header().Set("Content-Type", reqHeader)
+
 		res.Write(resp)
 		loggingResponse.WriteStatusCode(http.StatusOK)
 	}
+
+	reqHeader := req.Header.Get("Content-Type")
+
+	if res.Header().Get("Content-Type") == "" {
+		res.Header().Add("Content-Type", reqHeader)
+	}
+
+	res.Header().Set("Content-Type", reqHeader)
+
 }
 
 func JSONGetMetricsHandler(res http.ResponseWriter, req *http.Request) {
@@ -208,9 +222,6 @@ func JSONGetMetricsHandler(res http.ResponseWriter, req *http.Request) {
 		Delta: nil,
 		Value: nil,
 	}
-
-	res.Header().Add("Content-Type", "application/json")
-	res.Header().Set("Connection", "Keep-Alive")
 
 	var sMetrics memstorage.Metrics
 	var buf bytes.Buffer
@@ -253,7 +264,13 @@ func JSONGetMetricsHandler(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		res.Header().Set("Content-Type", "application/json")
+		reqHeader := req.Header.Get("Content-Type")
+
+		if res.Header().Get("Content-Type") == "" {
+			res.Header().Add("Content-Type", reqHeader)
+		}
+
+		res.Header().Set("Content-Type", reqHeader)
 		res.Write(resp)
 
 		loggingResponse.WriteStatusCode(http.StatusOK)

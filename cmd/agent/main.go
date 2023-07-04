@@ -128,6 +128,7 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		}
 
 		log.Println(response)
+		log.Println(response.Header().Get("Content-Type"))
 		log.Println(url)
 	}
 
@@ -150,6 +151,7 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		}
 
 		log.Println(response)
+		log.Println(response.Header().Get("Content-Type"))
 		log.Println(url)
 	}
 
