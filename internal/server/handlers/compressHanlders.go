@@ -79,9 +79,6 @@ func WithGzipActions(h http.Handler) http.Handler {
 			cw := newCompressWriter(w)
 			ow = cw
 			defer cw.Close()
-		} else {
-			cw := w
-			ow = cw
 		}
 
 		contentEncoding := r.Header.Get("Content-Encoding")
