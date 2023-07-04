@@ -84,7 +84,8 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 
 	client.
 		SetHeader("Content-Type", "application/json").
-		SetHeader("Accept", "application/json")
+		SetHeader("Accept", "application/json").
+		SetHeader("Accept-Encoding", "gzip")
 
 	url := fmt.Sprintf("http://%s/update/", agentURL)
 
