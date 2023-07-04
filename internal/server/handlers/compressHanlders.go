@@ -78,6 +78,8 @@ func WithGzipActions(h http.Handler) http.Handler {
 		if supportsGzip && supportedType {
 			cw := newCompressWriter(w)
 			ow = cw
+
+			ow.Header().Set("Content-Encoding", "gzip")
 			defer cw.Close()
 		}
 

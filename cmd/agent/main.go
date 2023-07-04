@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"compress/gzip"
 	"flag"
 	"fmt"
@@ -80,8 +79,6 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 	client := resty.New()
 	agentURL := agentConfig.AgentParams.Address
 
-	client.OnAfterResponse(unzipResponseMiddleware)
-
 	client.
 		SetRetryCount(20).
 		SetRetryWaitTime(5 * time.Second).
@@ -96,6 +93,7 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 
 	postClient := client.R()
 
+	var gaugeReader io.ReadCloser
 	for k, v := range metricsGauge.RuntimeMetrics {
 		deltaValue := int64(0)
 		floatGaugeValue, _ := strconv.ParseFloat(agentMetrics.GaugeToString(v), 64)
@@ -107,6 +105,15 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		}
 		response, err := postClient.SetBody(requestBody).Post(url)
 
+		switch response.Header().Get("Content-Encoding") {
+		case "gzip":
+			gaugeReader, err = gzip.NewReader(response.RawResponse.Body)
+		default:
+			gaugeReader = response.RawResponse.Body
+		}
+
+		response.RawResponse.Body = gaugeReader
+
 		if err != nil {
 			log.Print(err)
 			continue
@@ -117,6 +124,9 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 
 	}
 
+	defer gaugeReader.Close()
+
+	var counterReader io.ReadCloser
 	for k, v := range metricsCount.RuntimeMetrics {
 		deltaValue, _ := strconv.Atoi(agentMetrics.CounterToString(v))
 		int64DeltaValue := int64(deltaValue)
@@ -129,6 +139,15 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		}
 		response, err := postClient.SetBody(requestBody).Post(url)
 
+		switch response.Header().Get("Content-Encoding") {
+		case "gzip":
+			counterReader, err = gzip.NewReader(response.RawResponse.Body)
+		default:
+			counterReader = response.RawResponse.Body
+		}
+
+		response.RawResponse.Body = counterReader
+
 		if err != nil {
 
 			log.Print(err)
@@ -138,24 +157,5 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		log.Println(response)
 		log.Println(url)
 	}
-}
-
-func unzipResponseMiddleware(c *resty.Client, resp *resty.Response) error {
-	if resp.Header().Get("Content-Encoding") == "gzip" {
-
-		gzreader, err := gzip.NewReader(resp.RawResponse.Body)
-		if err != nil {
-			return err
-		}
-
-		output, err := io.ReadAll(gzreader)
-		if err != nil {
-			return err
-		}
-
-		resp.RawResponse.Body = io.NopCloser(bytes.NewBuffer(output))
-		resp.Header().Set("Content-Length", fmt.Sprintf("%d", len(output)))
-	}
-
-	return nil
+	defer counterReader.Close()
 }
