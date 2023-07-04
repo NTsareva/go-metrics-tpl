@@ -74,7 +74,7 @@ func WithGzipActions(h http.Handler) http.Handler {
 
 		acceptContentType := r.Header.Get("Content-Type")
 		supportedType := strings.Contains(acceptContentType, "application/json") ||
-			strings.Contains(acceptContentType, "text/html")
+			strings.Contains(acceptContentType, "text/html") || strings.Contains(acceptContentType, "html/text")
 		if supportsGzip && supportedType {
 			cw := newCompressWriter(w)
 			ow = cw
