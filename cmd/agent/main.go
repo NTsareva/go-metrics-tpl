@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"flag"
 	"fmt"
 	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -77,6 +80,8 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 	client := resty.New()
 	agentURL := agentConfig.AgentParams.Address
 
+	client.OnAfterResponse(unzipResponseMiddleware)
+
 	client.
 		SetRetryCount(20).
 		SetRetryWaitTime(5 * time.Second).
@@ -133,4 +138,24 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		log.Println(response)
 		log.Println(url)
 	}
+}
+
+func unzipResponseMiddleware(c *resty.Client, resp *resty.Response) error {
+	if resp.Header().Get("Content-Encoding") == "gzip" {
+
+		gzreader, err := gzip.NewReader(resp.RawResponse.Body)
+		if err != nil {
+			return err
+		}
+
+		output, err := io.ReadAll(gzreader)
+		if err != nil {
+			return err
+		}
+
+		resp.RawResponse.Body = io.NopCloser(bytes.NewBuffer(output))
+		resp.Header().Set("Content-Length", fmt.Sprintf("%d", len(output)))
+	}
+
+	return nil
 }
