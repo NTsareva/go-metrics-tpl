@@ -139,12 +139,6 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 		sentMetricsCounterValue := sMetrics.Delta
 		sentMetricName := sMetrics.ID
 
-		//Распарсили то, что получили от JSON
-		//Проверили тип
-		//Если тип GAUGE, просто сохранили
-		//Если тип Counter, скастовали, взяли адрес, сохранили
-		//В теле ответа запросили из стораджа, скастовали
-
 		if !servermetrics.IfHasCorrectType(sentMetricType) {
 			http.Error(res, "incorrect type of metrics "+sentMetricType+" ", http.StatusBadRequest)
 			loggingResponse.WriteHeader(http.StatusBadRequest)

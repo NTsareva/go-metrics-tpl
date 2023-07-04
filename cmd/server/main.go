@@ -21,6 +21,7 @@ func MetricsRouter() chi.Router {
 	r := handlers.Chi
 
 	r.Use(handlers.WithLogging)
+	r.Use(handlers.WithGzipActions)
 
 	r.Post("/update", handlers.NoMetricsTypeHandler)                  //Done
 	r.Post("/update/", handlers.JSONUpdateMetricsHandler)             //Done
