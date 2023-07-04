@@ -79,6 +79,10 @@ func WithGzipActions(h http.Handler) http.Handler {
 			cw := newCompressWriter(w)
 			ow = cw
 
+			if ow.Header().Get("Content-Encoding") == "" {
+				ow.Header().Add("Content-Encoding", "gzip")
+			}
+
 			ow.Header().Set("Content-Encoding", "gzip")
 			defer cw.Close()
 		}
@@ -100,10 +104,6 @@ func WithGzipActions(h http.Handler) http.Handler {
 			ow.Header().Set("Content-Type", acceptContentType)
 		} else {
 			ow.Header().Set("Content-Type", "text/html")
-		}
-
-		if supportsGzip {
-			ow.Header().Set("Content-Encoding", "gzip")
 		}
 
 		h.ServeHTTP(ow, r)
