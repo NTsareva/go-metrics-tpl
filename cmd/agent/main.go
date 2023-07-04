@@ -1,11 +1,9 @@
 package main
 
 import (
-	"compress/gzip"
 	"flag"
 	"fmt"
 	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
-	"io"
 	"log"
 	"os"
 	"strconv"
@@ -77,6 +75,26 @@ func metricsRenew(metricsGauge agentMetrics.MetricsGauge, metricsCount agentMetr
 
 func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *agentMetrics.MetricsCount) {
 	client := resty.New()
+	//client.OnAfterResponse(func(client *resty.Client, res *resty.Response) error {
+	//	var reader io.ReadCloser
+	//	var err error
+	//
+	//	switch res.Header().Get("Content-Encoding") {
+	//	case "gzip":
+	//		reader, err = gzip.NewReader(res.RawResponse.Body)
+	//		if err != nil {
+	//			return err
+	//		}
+	//	default:
+	//		reader = res.RawResponse.Body
+	//	}
+	//
+	//	res.RawResponse.Body = reader
+	//
+	//	reader.Close()
+	//	return nil
+	//})
+
 	agentURL := agentConfig.AgentParams.Address
 
 	client.
@@ -94,7 +112,6 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 	postClient := client.R()
 
 	for k, v := range metricsGauge.RuntimeMetrics {
-		var gaugeReader io.ReadCloser
 		deltaValue := int64(0)
 		floatGaugeValue, _ := strconv.ParseFloat(agentMetrics.GaugeToString(v), 64)
 		requestBody := MetricsBody{
@@ -105,15 +122,6 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		}
 		response, err := postClient.SetBody(requestBody).Post(url)
 
-		switch response.Header().Get("Content-Encoding") {
-		case "gzip":
-			gaugeReader, err = gzip.NewReader(response.RawResponse.Body)
-		default:
-			gaugeReader = response.RawResponse.Body
-		}
-
-		response.RawResponse.Body = gaugeReader
-
 		if err != nil {
 			log.Print(err)
 			continue
@@ -121,12 +129,9 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 
 		log.Println(response)
 		log.Println(url)
-
-		//gaugeReader.Close()
 	}
 
 	for k, v := range metricsCount.RuntimeMetrics {
-		var counterReader io.ReadCloser
 
 		deltaValue, _ := strconv.Atoi(agentMetrics.CounterToString(v))
 		int64DeltaValue := int64(deltaValue)
@@ -139,24 +144,13 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		}
 		response, err := postClient.SetBody(requestBody).Post(url)
 
-		switch response.Header().Get("Content-Encoding") {
-		case "gzip":
-			counterReader, err = gzip.NewReader(response.RawResponse.Body)
-		default:
-			counterReader = response.RawResponse.Body
-		}
-
-		response.RawResponse.Body = counterReader
-
 		if err != nil {
-
 			log.Print(err)
 			continue
 		}
 
 		log.Println(response)
 		log.Println(url)
-
-		//counterReader.Close()
 	}
+
 }
