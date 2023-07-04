@@ -102,9 +102,9 @@ func WithGzipActions(h http.Handler) http.Handler {
 			ow.Header().Set("Content-Type", "text/html")
 		}
 
-		if acceptEncoding != "" {
-			ow.Header().Set("Content-Encoding", acceptEncoding)
-		}
+		//if acceptEncoding != "" {
+		//	ow.Header().Set("Content-Encoding", acceptEncoding)
+		//}
 
 		h.ServeHTTP(ow, r)
 	})
