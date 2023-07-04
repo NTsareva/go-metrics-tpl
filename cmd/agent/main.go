@@ -93,8 +93,8 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 
 	postClient := client.R()
 
-	var gaugeReader io.ReadCloser
 	for k, v := range metricsGauge.RuntimeMetrics {
+		var gaugeReader io.ReadCloser
 		deltaValue := int64(0)
 		floatGaugeValue, _ := strconv.ParseFloat(agentMetrics.GaugeToString(v), 64)
 		requestBody := MetricsBody{
@@ -122,12 +122,12 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 		log.Println(response)
 		log.Println(url)
 
+		//gaugeReader.Close()
 	}
 
-	defer gaugeReader.Close()
-
-	var counterReader io.ReadCloser
 	for k, v := range metricsCount.RuntimeMetrics {
+		var counterReader io.ReadCloser
+
 		deltaValue, _ := strconv.Atoi(agentMetrics.CounterToString(v))
 		int64DeltaValue := int64(deltaValue)
 		floatGaugeValue := 0.0
@@ -156,6 +156,7 @@ func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *a
 
 		log.Println(response)
 		log.Println(url)
+
+		//counterReader.Close()
 	}
-	defer counterReader.Close()
 }

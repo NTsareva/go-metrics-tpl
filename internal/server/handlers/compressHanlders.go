@@ -80,9 +80,10 @@ func WithGzipActions(h http.Handler) http.Handler {
 			ow = cw
 
 			ow.Header().Set("Content-Encoding", "gzip")
-			ow.Header().Set("Content-Type", acceptContentType)
 			defer cw.Close()
 		}
+
+		ow.Header().Set("Content-Type", acceptContentType)
 
 		contentEncoding := r.Header.Get("Content-Encoding")
 		sendsGzip := strings.Contains(contentEncoding, "gzip")
