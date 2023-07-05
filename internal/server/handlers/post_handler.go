@@ -3,6 +3,9 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/filestorage"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,8 +18,10 @@ import (
 
 var memStorage memstorage.MemStorage
 var Chi chi.Router
+var Consumer *filestorage.Consumer
+var Producer *filestorage.Producer
 
-func Initialize() {
+func Initialize(isRestore bool, filePath string) {
 	Chi = chi.NewRouter()
 
 	if memStorage.GaugeStorage == nil || memStorage.CounterStorage == nil {
@@ -24,6 +29,37 @@ func Initialize() {
 		memStorage.CounterStorage = make(map[string]memstorage.Counter)
 
 		memStorage.New()
+	}
+
+	if isRestore == true && filePath != "" {
+		var err error
+		Producer, err = filestorage.NewProducer(filePath)
+		log.Println(filePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		Consumer, err = filestorage.NewConsumer(filePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer Consumer.Close()
+
+		metrics, err := Consumer.ReadMetrics()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, metric := range metrics {
+			if metric.MType == "gauge" {
+				memStorage.Save(metric.ID, metric.Value)
+			}
+			if metric.MType == "counter" {
+				memStorage.Save(metric.ID, metric.Value)
+			}
+		}
+
+		fmt.Println(memStorage.PrintAll())
 	}
 }
 

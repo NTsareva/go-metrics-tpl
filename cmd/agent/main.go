@@ -75,25 +75,6 @@ func metricsRenew(metricsGauge agentMetrics.MetricsGauge, metricsCount agentMetr
 
 func sendRuntimeMetrics(metricsGauge *agentMetrics.MetricsGauge, metricsCount *agentMetrics.MetricsCount) {
 	client := resty.New()
-	//client.OnAfterResponse(func(client *resty.Client, res *resty.Response) error {
-	//	var reader io.ReadCloser
-	//	var err error
-	//
-	//	switch res.Header().Get("Content-Encoding") {
-	//	case "gzip":
-	//		reader, err = gzip.NewReader(res.RawResponse.Body)
-	//		if err != nil {
-	//			return err
-	//		}
-	//	default:
-	//		reader = res.RawResponse.Body
-	//	}
-	//
-	//	res.RawResponse.Body = reader
-	//
-	//	reader.Close()
-	//	return nil
-	//})
 
 	agentURL := agentConfig.AgentParams.Address
 

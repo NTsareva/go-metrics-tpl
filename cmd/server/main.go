@@ -2,21 +2,25 @@ package main
 
 import (
 	"flag"
+	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
+	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
-	"github.com/go-chi/chi/v5"
+	"strconv"
+	"time"
 )
 
 var serverParams struct {
-	address string
+	address         string
+	storeInterval   int64
+	fileStoragePath string
+	ifRestore       bool
 }
 
 func MetricsRouter() chi.Router {
-	handlers.Initialize()
+	handlers.Initialize(serverParams.ifRestore, serverParams.fileStoragePath)
 
 	r := handlers.Chi
 
@@ -34,6 +38,11 @@ func MetricsRouter() chi.Router {
 	r.Get("/", handlers.AllMetricsHandler)
 	r.Get("/value/{type}/{metric}", handlers.MetricHandler)
 	r.Post("/value/", handlers.JSONGetMetricsHandler)
+
+	for i := 0; i <= int(3); i++ {
+		handlers.WriteMemstorageToFile()
+		time.Sleep(1000 * time.Millisecond)
+	}
 
 	return r
 }
@@ -55,12 +64,29 @@ func main() {
 	)
 
 	flag.StringVar(&serverParams.address, "a", addr, "input address")
+	flag.Int64Var(&serverParams.storeInterval, "i", 3, "store interval")
+	flag.StringVar(&serverParams.fileStoragePath, "f", "./tmp/metrics-db.json", "save file path")
+	flag.BoolVar(&serverParams.ifRestore, "r", true, "if should restore")
 	flag.Parse()
+
 	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
 		serverParams.address = envRunAddr
+	}
+
+	if envStoreInterval := os.Getenv("STORE_INTERVAL"); envStoreInterval != "" {
+		serverParams.storeInterval, _ = strconv.ParseInt(envStoreInterval, 10, 64)
+	}
+
+	if envStoragePath := os.Getenv("FILE_STORAGE_PATH"); envStoragePath != "" {
+		serverParams.address = envStoragePath
+	}
+
+	if envIfRestore := os.Getenv("RESTORE"); envIfRestore != "" {
+		serverParams.address = envIfRestore
 	}
 
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		sugar.Fatalf(err.Error(), "event", "start server")
 	}
+
 }
