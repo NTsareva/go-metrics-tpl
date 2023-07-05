@@ -23,7 +23,6 @@ func MetricsRouter() chi.Router {
 	handlers.Initialize(serverParams.ifRestore, serverParams.fileStoragePath)
 
 	r := handlers.Chi
-
 	r.Use(handlers.WithLogging)
 	r.Use(handlers.WithGzipActions)
 
@@ -38,11 +37,6 @@ func MetricsRouter() chi.Router {
 	r.Get("/", handlers.AllMetricsHandler)
 	r.Get("/value/{type}/{metric}", handlers.MetricHandler)
 	r.Post("/value/", handlers.JSONGetMetricsHandler)
-
-	for i := 0; i <= int(3); i++ {
-		handlers.WriteMemstorageToFile()
-		time.Sleep(1000 * time.Millisecond)
-	}
 
 	return r
 }
@@ -64,8 +58,8 @@ func main() {
 	)
 
 	flag.StringVar(&serverParams.address, "a", addr, "input address")
-	flag.Int64Var(&serverParams.storeInterval, "i", 3, "store interval")
-	flag.StringVar(&serverParams.fileStoragePath, "f", "./tmp/metrics-db.json", "save file path")
+	flag.Int64Var(&serverParams.storeInterval, "i", 300, "store interval")
+	flag.StringVar(&serverParams.fileStoragePath, "f", "/tmp/metrics-db.json", "save file path")
 	flag.BoolVar(&serverParams.ifRestore, "r", true, "if should restore")
 	flag.Parse()
 
@@ -85,8 +79,18 @@ func main() {
 		serverParams.address = envIfRestore
 	}
 
+	go func() {
+		for {
+			log.Println("seconds")
+			handlers.WriteMemstorageToFile()
+			//seconds := int(serverParams.storeInterval)
+			time.Sleep(time.Duration(20) * time.Second)
+		}
+	}()
+
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		sugar.Fatalf(err.Error(), "event", "start server")
+
 	}
 
 }

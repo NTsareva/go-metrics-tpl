@@ -13,7 +13,7 @@ type Consumer struct {
 }
 
 func NewConsumer(filename string) (*Consumer, error) {
-	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0777)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ type Producer struct {
 }
 
 func NewProducer(filename string) (*Producer, error) {
-	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0777)
 	if err != nil {
 		return nil, err
 	}
@@ -95,4 +95,8 @@ func (p *Producer) WriteMetric(metric *memstorage.Metrics) error {
 	}
 
 	return p.writer.Flush()
+}
+
+func (p *Producer) Close() error {
+	return p.file.Close()
 }

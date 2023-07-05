@@ -34,20 +34,22 @@ func Initialize(isRestore bool, filePath string) {
 	if isRestore == true && filePath != "" {
 		var err error
 		Producer, err = filestorage.NewProducer(filePath)
-		log.Println(filePath)
+		//log.Println(filePath)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			log.Println("prod")
 		}
 
 		Consumer, err = filestorage.NewConsumer(filePath)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			log.Println("cons")
 		}
 		defer Consumer.Close()
 
 		metrics, err := Consumer.ReadMetrics()
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		for _, metric := range metrics {
