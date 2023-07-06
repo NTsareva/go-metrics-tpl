@@ -82,7 +82,7 @@ func main() {
 	go func() {
 		for {
 			log.Println("seconds")
-			handlers.WriteMemstorageToFile()
+			handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 			//seconds := int(serverParams.storeInterval)
 			time.Sleep(time.Duration(20) * time.Second)
 		}

@@ -3,7 +3,9 @@ package filestorage
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
+	"log"
 	"os"
 )
 
@@ -13,7 +15,7 @@ type Consumer struct {
 }
 
 func NewConsumer(filename string) (*Consumer, error) {
-	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0777)
+	file, err := os.OpenFile(filename, os.O_RDONLY, 0777)
 	if err != nil {
 		return nil, err
 	}
@@ -43,12 +45,18 @@ func (c *Consumer) ReadMetric() (*memstorage.Metrics, error) {
 
 func (c *Consumer) ReadMetrics() (metrics []*memstorage.Metrics, err error) {
 	metric := memstorage.Metrics{}
+
 	for c.scanner.Scan() {
 		line := c.scanner.Text()
 
+		fmt.Println(line)
+		fmt.Println("line")
+
 		err := json.Unmarshal([]byte(line), &metric)
+		log.Println(metric)
 		if err != nil {
-			return nil, err
+			log.Println("Error of read")
+			//continue
 		}
 		metricAddress := &metric
 
@@ -69,7 +77,7 @@ type Producer struct {
 }
 
 func NewProducer(filename string) (*Producer, error) {
-	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0777)
+	file, err := os.OpenFile(filename, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0777)
 	if err != nil {
 		return nil, err
 	}

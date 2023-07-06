@@ -1,11 +1,21 @@
 package handlers
 
 import (
+	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/filestorage"
 	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
 	"log"
 )
 
-func WriteMemstorageToFile() {
+func WriteMemstorageToFile(filePath string) {
+	if filePath != "" {
+		var err error
+		Producer, err = filestorage.NewProducer(filePath)
+		//log.Println(filePath)
+		if err != nil {
+			log.Println(err)
+			log.Println("prod")
+		}
+	}
 	if Producer != nil {
 		if memStorage.GaugeStorage != nil {
 			for k, v := range memStorage.GaugeStorage {

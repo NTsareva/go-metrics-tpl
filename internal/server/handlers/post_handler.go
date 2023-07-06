@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/filestorage"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -28,41 +30,66 @@ func Initialize(isRestore bool, filePath string) {
 		memStorage.GaugeStorage = make(map[string]memstorage.Gauge)
 		memStorage.CounterStorage = make(map[string]memstorage.Counter)
 
-		memStorage.New()
 	}
 
 	if isRestore == true && filePath != "" {
-		var err error
-		Producer, err = filestorage.NewProducer(filePath)
-		//log.Println(filePath)
+
+		//Consumer, err = filestorage.NewConsumer(filePath)
+		//if err != nil {
+		//	log.Println(err)
+		//	log.Println("cons")
+		//}
+		//
+		//metrics, err := Consumer.ReadMetric()
+		//if err != nil {
+		//
+		//}
+		//if metrics != nil {
+		//	log.Println(metrics.ID)
+		//}
+
+		file, err := os.OpenFile(filePath, os.O_RDONLY, 0777)
+
 		if err != nil {
 			log.Println(err)
-			log.Println("prod")
 		}
 
-		Consumer, err = filestorage.NewConsumer(filePath)
-		if err != nil {
-			log.Println(err)
-			log.Println("cons")
-		}
-		defer Consumer.Close()
+		defer file.Close()
+		var metric *servermetrics.Metrics
+		metrics := []*servermetrics.Metrics{}
 
-		metrics, err := Consumer.ReadMetrics()
-		if err != nil {
-			log.Println(err)
-		}
+		scanner := bufio.NewScanner(file)
+		fmt.Println(scanner.Text())
 
-		for _, metric := range metrics {
-			if metric.MType == "gauge" {
-				memStorage.Save(metric.ID, metric.Value)
+		for scanner.Scan() {
+
+			line := scanner.Text()
+
+			fmt.Println(line)
+
+			err := json.Unmarshal([]byte(line), &metric)
+			log.Println(metric)
+			if err != nil {
+				log.Println("Error of read")
+				continue
 			}
-			if metric.MType == "counter" {
-				memStorage.Save(metric.ID, metric.Value)
-			}
+			metricAddress := metric
+
+			metrics = append(metrics, metricAddress)
 		}
 
-		fmt.Println(memStorage.PrintAll())
+	} else {
+		memStorage.New()
 	}
+
+	var err error
+	Producer, err = filestorage.NewProducer(filePath)
+
+	if err != nil {
+		log.Println(err)
+
+	}
+
 }
 
 func NoMetricsTypeHandler(res http.ResponseWriter, req *http.Request) {
