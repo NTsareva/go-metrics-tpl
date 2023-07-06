@@ -2,13 +2,16 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 )
 
@@ -59,9 +62,10 @@ func main() {
 
 	flag.StringVar(&serverParams.address, "a", addr, "input address")
 	flag.Int64Var(&serverParams.storeInterval, "i", 300, "store interval")
-	flag.StringVar(&serverParams.fileStoragePath, "f", "/tmp/metrics-db.json", "save file path")
+	flag.StringVar(&serverParams.fileStoragePath, "f", "", "save file path")
 	flag.BoolVar(&serverParams.ifRestore, "r", true, "if should restore")
 	flag.Parse()
+	///tmp/metrics-db.json"
 
 	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
 		serverParams.address = envRunAddr
@@ -79,6 +83,9 @@ func main() {
 		serverParams.address = envIfRestore
 	}
 
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
+
 	go func() {
 		for {
 			time.Sleep(time.Duration(serverParams.storeInterval) * time.Second)
@@ -89,5 +96,10 @@ func main() {
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		sugar.Fatalf(err.Error(), "event", "start server")
 	}
+
+	sig := <-signalCh
+	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
+	fmt.Println("Resieved sig", sig)
+	os.Exit(0)
 
 }
