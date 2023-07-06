@@ -55,7 +55,7 @@ func main() {
 
 	sugar.Infow(
 		"Starting server",
-		"addr", "localhost:8080",
+		"addr", serverParams.address,
 	)
 
 	flag.StringVar(&serverParams.address, "a", "localhost:8080", "input address")
@@ -90,7 +90,10 @@ func main() {
 		}
 	}()
 
-	log.Println(serverParams.address)
+	if serverParams.address == "" {
+		serverParams.address = "localhost:8080"
+	}
+	sugar.Info(serverParams.address)
 
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		TryAgain(3, 10)
