@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -51,7 +52,7 @@ func main() {
 
 	sugar := *logger.Sugar()
 
-	flag.StringVar(&serverParams.address, "a", "localhost:8080", "input address")
+	flag.StringVar(&serverParams.address, "a", "http://localhost:8080", "input address")
 	flag.Int64Var(&serverParams.storeInterval, "i", 300, "store interval")
 	flag.StringVar(&serverParams.fileStoragePath, "f", "tmp/metrics-db.json", "save file path")
 	flag.BoolVar(&serverParams.ifRestore, "r", true, "if should restore")
@@ -70,6 +71,15 @@ func main() {
 		serverParams.ifRestore, _ = strconv.ParseBool(envIfRestore)
 	}
 
+	addressPrefixes := []string{"http://", "https://"}
+
+	if strings.Contains(serverParams.address, addressPrefixes[0]) {
+		serverParams.address = strings.Replace(serverParams.address, addressPrefixes[0], "", 1)
+	}
+	if strings.Contains(serverParams.address, addressPrefixes[1]) {
+		serverParams.address = strings.Replace(serverParams.address, addressPrefixes[1], "", 1)
+	}
+
 	//signalCh := make(chan os.Signal, 1)
 	//signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 
@@ -81,14 +91,9 @@ func main() {
 	}()
 
 	sugar.Infow(
-		"Starting server",
+		"Starting server...",
 		"addr", serverParams.address,
 	)
-
-	if serverParams.address == "" || serverParams.address == "false" {
-		serverParams.address = "localhost:8080"
-	}
-	sugar.Info(serverParams.address)
 
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		sugar.Fatal(err)
