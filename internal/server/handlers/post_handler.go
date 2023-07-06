@@ -62,7 +62,7 @@ func Initialize(isRestore bool, filePath string) {
 				memStorage.Save(metric.ID, metric.Value)
 			} else if metric.MType == memstorage.CounterType {
 				memStorage.Save(metric.ID, metric.Delta)
-			}:q
+			}
 			log.Println(memStorage.PrintAll())
 		}
 
