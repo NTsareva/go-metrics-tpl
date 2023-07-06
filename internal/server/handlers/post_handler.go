@@ -49,23 +49,19 @@ func Initialize(isRestore bool, filePath string) {
 				err := json.Unmarshal([]byte(line), &metric)
 
 				if err != nil {
-					log.Println("Error of read")
+					log.Println("Problem with read of string:", line)
 					continue
 				}
 
 				if metric.MType == memstorage.GaugeType {
-					memStorage.Save(metric.ID, metric.Value)
+					floatMetricValue := *metric.Value
+					//metric.Value = &floatMetricValue
+					memStorage.Save(metric.ID, servermetrics.Gauge(floatMetricValue))
 				} else if metric.MType == memstorage.CounterType {
-					memStorage.Save(metric.ID, metric.Delta)
+					intMetricValue := *metric.Delta
+					memStorage.Save(metric.ID, servermetrics.Counter(intMetricValue))
 				}
 			}
-		}
-
-		Producer, err = filestorage.NewProducer(filePath)
-
-		if err != nil {
-			memStorage.New()
-			log.Println(err)
 		}
 	}
 }
@@ -220,7 +216,6 @@ func JSONUpdateMetricsHandler(res http.ResponseWriter, req *http.Request) {
 		if sentMetricType == servermetrics.CounterType {
 			metricDelta, _ := memStorage.Get(sentMetricName, sentMetricType)
 			intMetricDelta, _ := servermetrics.StringToCounter(metricDelta)
-
 			int64MetricDelta := int64(intMetricDelta)
 			metric.Delta = &int64MetricDelta
 		} else if sentMetricType == servermetrics.GaugeType {
