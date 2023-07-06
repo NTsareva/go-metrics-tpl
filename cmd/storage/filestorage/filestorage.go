@@ -78,6 +78,7 @@ type Producer struct {
 func NewProducer(filename string) (*Producer, error) {
 	file, err := os.OpenFile(filename, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0777)
 	if err != nil {
+		log.Println("+++")
 		return nil, err
 	}
 

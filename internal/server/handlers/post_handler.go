@@ -66,9 +66,8 @@ func Initialize(isRestore bool, filePath string) {
 		Producer, err = filestorage.NewProducer(filePath)
 
 		if err != nil {
-			log.Println(err)
-		} else {
 			memStorage.New()
+			log.Println(err)
 		}
 	}
 }
