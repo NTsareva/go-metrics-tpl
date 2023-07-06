@@ -56,7 +56,7 @@ func main() {
 
 	flag.StringVar(&serverParams.address, "a", "http://localhost:8080", "input address")
 	flag.Int64Var(&serverParams.storeInterval, "i", 300, "store interval")
-	flag.StringVar(&serverParams.fileStoragePath, "f", "tmp/metrics-db.json", "save file path")
+	flag.StringVar(&serverParams.fileStoragePath, "f", "/tmp/metrics-db.json", "save file path")
 	flag.BoolVar(&serverParams.ifRestore, "r", true, "if should restore")
 	flag.Parse()
 
@@ -98,12 +98,16 @@ func main() {
 		"addr", serverParams.address,
 	)
 
-	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
-		sugar.Fatal(err)
+	for {
+		select {
+		case <-signalCh:
+			sugar.Info("Stopping the process...")
+			handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
+			os.Exit(0)
+		default:
+			if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
+				sugar.Fatal(err)
+			}
+		}
 	}
-
-	sig := <-signalCh
-	log.Println("Signal", sig)
-	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
-	os.Exit(0)
 }
