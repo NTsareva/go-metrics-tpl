@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -90,7 +91,12 @@ func main() {
 		}
 	}()
 
-	log.Println(serverParams.address)
+	_, port, err := net.SplitHostPort(serverParams.address)
+	if port == "" {
+		serverParams.address = serverParams.address + ":8080"
+	}
+
+	sugar.Info(serverParams.address)
 
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		TryAgain(3, 10)
