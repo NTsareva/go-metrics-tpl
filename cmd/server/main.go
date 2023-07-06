@@ -8,9 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 	"time"
 )
 
@@ -75,8 +73,8 @@ func main() {
 		serverParams.address = envIfRestore
 	}
 
-	signalCh := make(chan os.Signal, 1)
-	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
+	//signalCh := make(chan os.Signal, 1)
+	//signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 
 	go func() {
 		for {
@@ -99,9 +97,9 @@ func main() {
 		sugar.Fatal(err)
 	}
 
-	sig := <-signalCh
-	log.Println("Signal", sig)
-	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
+	//sig := <-signalCh
+	//log.Println("Signal", sig)
+	//handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 
-	os.Exit(0)
+	//os.Exit(0)
 }
