@@ -2,17 +2,14 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -98,15 +95,15 @@ func main() {
 		"addr", serverParams.address,
 	)
 
-	signalCh := make(chan os.Signal, 1)
-	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
+	//signalCh := make(chan os.Signal, 1)
+	//signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		sugar.Fatal(err)
 	}
 
-	<-signalCh
-	fmt.Println("Done")
-	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
+	//<-signalCh
+	//fmt.Println("Done")
+	//handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 
 }
