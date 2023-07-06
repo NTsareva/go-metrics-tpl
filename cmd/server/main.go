@@ -79,6 +79,7 @@ func main() {
 	if strings.Contains(serverParams.address, addressPrefixes[1]) {
 		serverParams.address = strings.Replace(serverParams.address, addressPrefixes[1], "", 1)
 	}
+	sugar.Info(serverParams.address)
 
 	//signalCh := make(chan os.Signal, 1)
 	//signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
