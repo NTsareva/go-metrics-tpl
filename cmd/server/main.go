@@ -62,10 +62,9 @@ func main() {
 
 	flag.StringVar(&serverParams.address, "a", addr, "input address")
 	flag.Int64Var(&serverParams.storeInterval, "i", 300, "store interval")
-	flag.StringVar(&serverParams.fileStoragePath, "f", "", "save file path")
+	flag.StringVar(&serverParams.fileStoragePath, "f", "tmp/metrics-db.json", "save file path")
 	flag.BoolVar(&serverParams.ifRestore, "r", true, "if should restore")
 	flag.Parse()
-	///tmp/metrics-db.json"
 
 	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
 		serverParams.address = envRunAddr
