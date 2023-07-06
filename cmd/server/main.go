@@ -93,8 +93,10 @@ func main() {
 	}()
 
 	log.Println(serverParams.address)
+
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
-		sugar.Fatalf(err.Error(), "event", "start server")
+		TryAgain(3, 10)
+		sugar.Fatal(err)
 	}
 
 	sig := <-signalCh
@@ -102,5 +104,12 @@ func main() {
 	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 
 	os.Exit(0)
+}
 
+func TryAgain(count int, timeSeconds int) {
+	for i := 0; i < count; i++ {
+		if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
+			time.Sleep(time.Duration(timeSeconds) * time.Second)
+		}
+	}
 }
