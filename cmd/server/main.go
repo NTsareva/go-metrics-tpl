@@ -53,6 +53,9 @@ func main() {
 
 	defer logger.Sync()
 
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
+
 	sugar := *logger.Sugar()
 
 	flag.StringVar(&serverParams.address, "a", "http://localhost:8080", "input address")
@@ -68,7 +71,7 @@ func main() {
 		serverParams.storeInterval, _ = strconv.ParseInt(envStoreInterval, 10, 64)
 	}
 	if envStoragePath := os.Getenv("FILE_STORAGE_PATH"); envStoragePath != "" {
-		serverParams.address = envStoragePath
+		serverParams.fileStoragePath = envStoragePath
 	}
 	if envIfRestore := os.Getenv("RESTORE"); envIfRestore != "" {
 		serverParams.ifRestore, _ = strconv.ParseBool(envIfRestore)
@@ -77,10 +80,12 @@ func main() {
 	addressPrefixes := []string{"http://", "https://"}
 
 	if strings.Contains(serverParams.address, addressPrefixes[0]) {
-		serverParams.address = strings.Replace(serverParams.address, addressPrefixes[0], "", 1)
+		newString := strings.Replace(serverParams.address, addressPrefixes[0], "", 1)
+		serverParams.address = newString
 	}
 	if strings.Contains(serverParams.address, addressPrefixes[1]) {
-		serverParams.address = strings.Replace(serverParams.address, addressPrefixes[1], "", 1)
+		newString := strings.Replace(serverParams.address, addressPrefixes[1], "", 1)
+		serverParams.address = newString
 	}
 	sugar.Info(serverParams.address)
 
@@ -100,11 +105,9 @@ func main() {
 		sugar.Fatal(err)
 	}
 
-	signalCh := make(chan os.Signal, 1)
-	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGKILL)
-
 	sig := <-signalCh
 
-	fmt.Println(sig)
-	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
+	defer fmt.Println(sig)
+	defer handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
+
 }
