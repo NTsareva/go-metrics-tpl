@@ -29,6 +29,8 @@ func Initialize(isRestore bool, filePath string) {
 
 	}
 
+	memStorage.New()
+
 	if isRestore && filePath != "" {
 
 		file, err := os.OpenFile(filePath, os.O_RDONLY, 0777)
