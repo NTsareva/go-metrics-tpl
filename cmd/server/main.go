@@ -97,19 +97,16 @@ func main() {
 		"Starting server...",
 		"addr", serverParams.address,
 	)
+
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 
-	select {
-	case <-signalCh:
-		sig := <-signalCh
-
-		defer fmt.Println(sig)
-		defer handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
-	default:
-		if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
-			sugar.Fatal(err)
-		}
+	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
+		sugar.Fatal(err)
 	}
+
+	<-signalCh
+	fmt.Println("Done")
+	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 
 }
