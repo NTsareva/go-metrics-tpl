@@ -8,8 +8,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -81,8 +83,8 @@ func main() {
 	}
 	sugar.Info(serverParams.address)
 
-	//signalCh := make(chan os.Signal, 1)
-	//signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGKILL)
 
 	go func() {
 		for {
@@ -100,9 +102,8 @@ func main() {
 		sugar.Fatal(err)
 	}
 
-	//sig := <-signalCh
-	//log.Println("Signal", sig)
-	//handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
-
-	//os.Exit(0)
+	sig := <-signalCh
+	log.Println("Signal", sig)
+	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
+	os.Exit(0)
 }
