@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
 
 var serverParams struct {
@@ -80,7 +81,7 @@ func main() {
 
 	go func() {
 		for {
-			//time.Sleep(time.Duration(serverParams.storeInterval) * time.Second)
+			time.Sleep(time.Duration(serverParams.storeInterval) * time.Second)
 			handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 		}
 	}()

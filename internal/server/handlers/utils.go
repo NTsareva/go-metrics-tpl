@@ -45,6 +45,5 @@ func WriteMemstorageToFile(filePath string) {
 		}
 
 		Producer.Close()
-		log.Println("Saving done")
 	}
 }

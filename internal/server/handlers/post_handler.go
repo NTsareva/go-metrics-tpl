@@ -36,29 +36,30 @@ func Initialize(isRestore bool, filePath string) {
 
 		if err != nil {
 			log.Println(err)
-		}
+		} else {
 
-		defer file.Close()
-		var metric *servermetrics.Metrics
+			defer file.Close()
+			var metric *servermetrics.Metrics
 
-		scanner := bufio.NewScanner(file)
-		fmt.Println(scanner.Text())
+			scanner := bufio.NewScanner(file)
+			fmt.Println(scanner.Text())
 
-		for scanner.Scan() {
+			for scanner.Scan() {
 
-			line := scanner.Text()
+				line := scanner.Text()
 
-			err := json.Unmarshal([]byte(line), &metric)
+				err := json.Unmarshal([]byte(line), &metric)
 
-			if err != nil {
-				log.Println("Error of read")
-				continue
-			}
+				if err != nil {
+					log.Println("Error of read")
+					continue
+				}
 
-			if metric.MType == memstorage.GaugeType {
-				memStorage.Save(metric.ID, metric.Value)
-			} else if metric.MType == memstorage.CounterType {
-				memStorage.Save(metric.ID, metric.Delta)
+				if metric.MType == memstorage.GaugeType {
+					memStorage.Save(metric.ID, metric.Value)
+				} else if metric.MType == memstorage.CounterType {
+					memStorage.Save(metric.ID, metric.Delta)
+				}
 			}
 		}
 
@@ -66,9 +67,9 @@ func Initialize(isRestore bool, filePath string) {
 
 		if err != nil {
 			log.Println(err)
+		} else {
+			memStorage.New()
 		}
-	} else {
-		memStorage.New()
 	}
 }
 

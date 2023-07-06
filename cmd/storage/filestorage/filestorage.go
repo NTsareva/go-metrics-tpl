@@ -71,8 +71,7 @@ func (c *Consumer) Close() error {
 }
 
 type Producer struct {
-	file *os.File
-	// добавляем Writer в Producer
+	file   *os.File
 	writer *bufio.Writer
 }
 
