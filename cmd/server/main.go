@@ -85,13 +85,15 @@ func main() {
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 
+	log.Println(addr)
+
 	go func() {
 		for {
 			time.Sleep(time.Duration(serverParams.storeInterval) * time.Second)
 			handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 		}
 	}()
-
+	log.Println("_____")
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		sugar.Fatalf(err.Error(), "event", "start server")
 	}
