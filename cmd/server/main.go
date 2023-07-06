@@ -60,17 +60,14 @@ func main() {
 	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
 		serverParams.address = envRunAddr
 	}
-
 	if envStoreInterval := os.Getenv("STORE_INTERVAL"); envStoreInterval != "" {
 		serverParams.storeInterval, _ = strconv.ParseInt(envStoreInterval, 10, 64)
 	}
-
 	if envStoragePath := os.Getenv("FILE_STORAGE_PATH"); envStoragePath != "" {
 		serverParams.address = envStoragePath
 	}
-
 	if envIfRestore := os.Getenv("RESTORE"); envIfRestore != "" {
-		serverParams.address = envIfRestore
+		serverParams.ifRestore, _ = strconv.ParseBool(envIfRestore)
 	}
 
 	//signalCh := make(chan os.Signal, 1)
