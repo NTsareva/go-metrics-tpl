@@ -6,17 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/filestorage"
+	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
+	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
+	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
-	"time"
-
-	"github.com/go-chi/chi/v5"
-
-	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
-	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 )
 
 var memStorage memstorage.MemStorage
@@ -63,22 +60,16 @@ func Initialize(isRestore bool, filePath string) {
 			} else if metric.MType == memstorage.CounterType {
 				memStorage.Save(metric.ID, metric.Delta)
 			}
-			log.Println(memStorage.PrintAll())
 		}
 
+		Producer, err = filestorage.NewProducer(filePath)
+
+		if err != nil {
+			log.Println(err)
+		}
 	} else {
 		memStorage.New()
 	}
-
-	var err error
-	time.Sleep(60)
-	Producer, err = filestorage.NewProducer(filePath)
-
-	if err != nil {
-		log.Println(err)
-
-	}
-
 }
 
 func NoMetricsTypeHandler(res http.ResponseWriter, req *http.Request) {

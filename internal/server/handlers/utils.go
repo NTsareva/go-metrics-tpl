@@ -9,11 +9,13 @@ import (
 func WriteMemstorageToFile(filePath string) {
 	if filePath != "" {
 		var err error
-		Producer, err = filestorage.NewProducer(filePath)
-		//log.Println(filePath)
-		if err != nil {
-			log.Println(err)
-			log.Println("prod")
+		if Producer == nil {
+			Producer, err = filestorage.NewProducer(filePath)
+			//log.Println(filePath)
+			if err != nil {
+				log.Println(err)
+				log.Println("prod")
+			}
 		}
 	}
 	if Producer != nil {
