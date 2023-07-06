@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/filestorage"
 	"github.com/NTsareva/go-metrics-tpl.git/cmd/storage/memstorage"
 	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
@@ -33,19 +32,16 @@ func Initialize(isRestore bool, filePath string) {
 	if isRestore && filePath != "" {
 
 		file, err := os.OpenFile(filePath, os.O_RDONLY, 0777)
-
 		if err != nil {
 			log.Println(err)
 		} else {
-
 			defer file.Close()
 			var metric *servermetrics.Metrics
 
 			scanner := bufio.NewScanner(file)
-			fmt.Println(scanner.Text())
+			//fmt.Println(scanner.Text())
 
 			for scanner.Scan() {
-
 				line := scanner.Text()
 
 				err := json.Unmarshal([]byte(line), &metric)

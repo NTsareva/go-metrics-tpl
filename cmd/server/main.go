@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -94,14 +93,14 @@ func main() {
 		}
 	}()
 
-	log.Println("_____")
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		sugar.Fatalf(err.Error(), "event", "start server")
 	}
 
 	sig := <-signalCh
+	log.Println("Signal", sig)
 	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
-	fmt.Println("Resieved sig", sig)
+
 	os.Exit(0)
 
 }

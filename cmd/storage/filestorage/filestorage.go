@@ -80,12 +80,12 @@ func NewProducer(filename string) (*Producer, error) {
 	if err != nil {
 		log.Println("+++")
 		return nil, err
+	} else {
+		return &Producer{
+			file:   file,
+			writer: bufio.NewWriter(file),
+		}, nil
 	}
-
-	return &Producer{
-		file:   file,
-		writer: bufio.NewWriter(file),
-	}, nil
 }
 
 func (p *Producer) WriteMetric(metric *memstorage.Metrics) error {
