@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -83,9 +84,6 @@ func main() {
 	}
 	sugar.Info(serverParams.address)
 
-	signalCh := make(chan os.Signal, 1)
-	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGKILL)
-
 	go func() {
 		for {
 			time.Sleep(time.Duration(serverParams.storeInterval) * time.Second)
@@ -98,16 +96,15 @@ func main() {
 		"addr", serverParams.address,
 	)
 
-	for {
-		select {
-		case <-signalCh:
-			sugar.Info("Stopping the process...")
-			handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
-			os.Exit(0)
-		default:
-			if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
-				sugar.Fatal(err)
-			}
-		}
+	signalCh := make(chan os.Signal, 2)
+	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGKILL)
+
+	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
+		sugar.Fatal(err)
 	}
+
+	<-signalCh
+
+	fmt.Println("Done")
+	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 }

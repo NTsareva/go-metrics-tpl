@@ -23,7 +23,7 @@ type MetricsBody struct {
 }
 
 func main() {
-	flag.StringVar(&agentConfig.AgentParams.Address, "a", "localhost:8080", "input address")
+	flag.StringVar(&agentConfig.AgentParams.Address, "a", "localhost:40301", "input address")
 	flag.IntVar(&agentConfig.AgentParams.PollInterval, "p", 2, "input poll interval")
 	flag.IntVar(&agentConfig.AgentParams.ReportInterval, "r", 10, "input report interval")
 
