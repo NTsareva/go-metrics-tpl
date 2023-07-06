@@ -100,13 +100,16 @@ func main() {
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 
-	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
-		sugar.Fatal(err)
+	select {
+	case <-signalCh:
+		sig := <-signalCh
+
+		defer fmt.Println(sig)
+		defer handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
+	default:
+		if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
+			sugar.Fatal(err)
+		}
 	}
-
-	sig := <-signalCh
-
-	defer fmt.Println(sig)
-	defer handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 
 }
