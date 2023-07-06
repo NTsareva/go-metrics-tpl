@@ -49,19 +49,18 @@ func main() {
 		log.Println(err)
 	}
 
-	addr := "localhost:8080"
 	defer logger.Sync()
 
 	sugar := *logger.Sugar()
 
 	sugar.Infow(
 		"Starting server",
-		"addr", addr,
+		"addr", "localhost:8080",
 	)
 
-	flag.StringVar(&serverParams.address, "a", addr, "input address")
+	flag.StringVar(&serverParams.address, "a", "localhost:8080", "input address")
 	flag.Int64Var(&serverParams.storeInterval, "i", 300, "store interval")
-	flag.StringVar(&serverParams.fileStoragePath, "f", "/tmp/metrics-db.json", "save file path")
+	flag.StringVar(&serverParams.fileStoragePath, "f", "tmp/metrics-db.json", "save file path")
 	flag.BoolVar(&serverParams.ifRestore, "r", true, "if should restore")
 	flag.Parse()
 
@@ -84,7 +83,7 @@ func main() {
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Println(addr)
+	log.Println(serverParams.address)
 
 	go func() {
 		for {
@@ -93,6 +92,7 @@ func main() {
 		}
 	}()
 
+	log.Println(serverParams.address)
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		sugar.Fatalf(err.Error(), "event", "start server")
 	}
