@@ -83,8 +83,6 @@ func main() {
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Println(serverParams.address)
-
 	go func() {
 		for {
 			time.Sleep(time.Duration(serverParams.storeInterval) * time.Second)
