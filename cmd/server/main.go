@@ -90,7 +90,7 @@ func main() {
 		}
 	}()
 
-	sugar.Info(serverParams.address)
+	log.Println(serverParams.address)
 
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		TryAgain(3, 10)
