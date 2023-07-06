@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -32,21 +33,7 @@ func Initialize(isRestore bool, filePath string) {
 
 	}
 
-	if isRestore == true && filePath != "" {
-
-		//Consumer, err = filestorage.NewConsumer(filePath)
-		//if err != nil {
-		//	log.Println(err)
-		//	log.Println("cons")
-		//}
-		//
-		//metrics, err := Consumer.ReadMetric()
-		//if err != nil {
-		//
-		//}
-		//if metrics != nil {
-		//	log.Println(metrics.ID)
-		//}
+	if isRestore && filePath != "" {
 
 		file, err := os.OpenFile(filePath, os.O_RDONLY, 0777)
 
@@ -56,7 +43,6 @@ func Initialize(isRestore bool, filePath string) {
 
 		defer file.Close()
 		var metric *servermetrics.Metrics
-		metrics := []*servermetrics.Metrics{}
 
 		scanner := bufio.NewScanner(file)
 		fmt.Println(scanner.Text())
@@ -65,17 +51,19 @@ func Initialize(isRestore bool, filePath string) {
 
 			line := scanner.Text()
 
-			fmt.Println(line)
-
 			err := json.Unmarshal([]byte(line), &metric)
-			log.Println(metric)
+
 			if err != nil {
 				log.Println("Error of read")
 				continue
 			}
-			metricAddress := metric
 
-			metrics = append(metrics, metricAddress)
+			if metric.MType == memstorage.GaugeType {
+				memStorage.Save(metric.ID, metric.Value)
+			} else if metric.MType == memstorage.CounterType {
+				memStorage.Save(metric.ID, metric.Delta)
+			}:q
+			log.Println(memStorage.PrintAll())
 		}
 
 	} else {
@@ -83,6 +71,7 @@ func Initialize(isRestore bool, filePath string) {
 	}
 
 	var err error
+	time.Sleep(60)
 	Producer, err = filestorage.NewProducer(filePath)
 
 	if err != nil {

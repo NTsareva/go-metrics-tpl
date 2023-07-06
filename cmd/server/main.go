@@ -44,7 +44,7 @@ func MetricsRouter() chi.Router {
 func main() {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		log.Print(err, "#1")
+		log.Println(err)
 	}
 
 	addr := "localhost:8080"
@@ -81,16 +81,13 @@ func main() {
 
 	go func() {
 		for {
-			log.Println("seconds")
+			time.Sleep(time.Duration(serverParams.storeInterval) * time.Second)
 			handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
-			//seconds := int(serverParams.storeInterval)
-			time.Sleep(time.Duration(20) * time.Second)
 		}
 	}()
 
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		sugar.Fatalf(err.Error(), "event", "start server")
-
 	}
 
 }
