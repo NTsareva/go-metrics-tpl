@@ -96,15 +96,15 @@ func main() {
 		"addr", serverParams.address,
 	)
 
-	signalCh := make(chan os.Signal, 2)
+	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGKILL)
 
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		sugar.Fatal(err)
 	}
 
-	<-signalCh
+	sig := <-signalCh
 
-	fmt.Println("Done")
+	fmt.Println(sig)
 	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 }
