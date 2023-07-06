@@ -2,17 +2,14 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/NTsareva/go-metrics-tpl.git/internal/server/handlers"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -100,11 +97,11 @@ func main() {
 		sugar.Fatal(err)
 	}
 
-	signalCh := make(chan os.Signal, 1)
-	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGKILL)
-
-	sig := <-signalCh
-
-	fmt.Println(sig)
-	handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
+	//signalCh := make(chan os.Signal, 1)
+	//signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGKILL)
+	//
+	//sig := <-signalCh
+	//
+	//fmt.Println(sig)
+	//handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 }
