@@ -53,11 +53,6 @@ func main() {
 
 	sugar := *logger.Sugar()
 
-	sugar.Infow(
-		"Starting server",
-		"addr", serverParams.address,
-	)
-
 	flag.StringVar(&serverParams.address, "a", "localhost:8080", "input address")
 	flag.Int64Var(&serverParams.storeInterval, "i", 300, "store interval")
 	flag.StringVar(&serverParams.fileStoragePath, "f", "tmp/metrics-db.json", "save file path")
@@ -89,6 +84,11 @@ func main() {
 			handlers.WriteMemstorageToFile(serverParams.fileStoragePath)
 		}
 	}()
+
+	sugar.Infow(
+		"Starting server",
+		"addr", serverParams.address,
+	)
 
 	if serverParams.address == "" {
 		serverParams.address = "localhost:8080"
