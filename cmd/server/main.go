@@ -90,7 +90,7 @@ func main() {
 		"addr", serverParams.address,
 	)
 
-	if serverParams.address == "" {
+	if serverParams.address == "" || serverParams.address == "false" {
 		serverParams.address = "localhost:8080"
 	}
 	sugar.Info(serverParams.address)
