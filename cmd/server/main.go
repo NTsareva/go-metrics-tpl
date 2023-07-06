@@ -53,9 +53,6 @@ func main() {
 
 	defer logger.Sync()
 
-	signalCh := make(chan os.Signal, 1)
-	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
-
 	sugar := *logger.Sugar()
 
 	flag.StringVar(&serverParams.address, "a", "http://localhost:8080", "input address")
@@ -100,6 +97,8 @@ func main() {
 		"Starting server...",
 		"addr", serverParams.address,
 	)
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 
 	if err := http.ListenAndServe(serverParams.address, MetricsRouter()); err != nil {
 		sugar.Fatal(err)
