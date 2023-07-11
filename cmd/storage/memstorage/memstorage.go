@@ -1,21 +1,49 @@
 package memstorage
 
 import (
+	"errors"
 	servermetrics "github.com/NTsareva/go-metrics-tpl.git/internal/server/metrics"
 )
 
 type Gauge servermetrics.Gauge
 type Counter servermetrics.Counter
 
+const (
+	GaugeType   string = "gauge"
+	CounterType string = "counter"
+)
+
+type Metrics struct {
+	ID    string   `json:"id"`              // имя метрики
+	MType string   `json:"type"`            // параметр, принимающий значение gauge или counter
+	Delta *int64   `json:"delta,omitempty"` // значение метрики в случае передачи counter
+	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
+}
+
+type Storage interface {
+	New()
+	Save(metrics string, value interface{}) error
+	SaveGauge(metrics string, value Gauge) error
+	SaveCounter(metrics string, value Counter) error
+	Remove(metric string) error
+	PrintAll() (string, error)
+	Get(metrics string, metricType string) (string, error)
+	IfExist(metrics string, metricType string) (string, error)
+}
+
 type MemStorage struct {
 	GaugeStorage   map[string]Gauge
 	CounterStorage map[string]Counter
 }
 
-func (memStorage *MemStorage) New() {
-	memStorage.GaugeStorage = make(map[string]Gauge)
-	memStorage.CounterStorage = make(map[string]Counter)
+func (memStorage *MemStorage) Initialize() *MemStorage {
+	return &MemStorage{
+		GaugeStorage:   make(map[string]Gauge),
+		CounterStorage: make(map[string]Counter),
+	}
+}
 
+func (memStorage *MemStorage) New() {
 	metricsGauge := servermetrics.MetricsGauge{}
 	metricsGauge.New()
 
@@ -27,7 +55,20 @@ func (memStorage *MemStorage) New() {
 	metricsCounter.New()
 
 	for k, v := range metricsCounter.RuntimeMetrics {
-		memStorage.GaugeStorage[k] = Gauge(v)
+		memStorage.CounterStorage[k] = Counter(v)
+	}
+}
+
+func (memStorage *MemStorage) Save(metrics string, value interface{}) error {
+	switch i := value.(type) {
+	case servermetrics.Gauge:
+		memStorage.GaugeStorage[metrics] = Gauge(i)
+		return nil
+	case servermetrics.Counter:
+		memStorage.CounterStorage[metrics] = Counter(i)
+		return nil
+	default:
+		return errors.New("no such type")
 	}
 }
 
@@ -54,6 +95,35 @@ func (memStorage *MemStorage) Remove(metrics string) error {
 	}
 
 	return nil
+}
+
+func (memStorage *MemStorage) Get(metricName string, metricType string) (string, error) {
+	metricsGauge := memStorage.GaugeStorage
+	metricsCounter := memStorage.CounterStorage
+
+	if metricType == GaugeType {
+		metricValue := servermetrics.GaugeToString(servermetrics.Gauge(metricsGauge[metricName]))
+		return metricValue, nil
+	} else if metricType == CounterType {
+		return servermetrics.CounterToString(servermetrics.Counter(metricsCounter[metricName])), nil
+	} else {
+		return "", errors.New("incorrect type, should be Gauge or Counter")
+	}
+}
+
+func (memStorage *MemStorage) MetricValueIfExists(metricName string, metricType string) (string, bool) {
+	metricsGauge := memStorage.GaugeStorage
+	metricsCounter := memStorage.CounterStorage
+
+	if metricType == GaugeType {
+		valGauge, okGauge := metricsGauge[metricName]
+		return servermetrics.GaugeToString(servermetrics.Gauge(valGauge)), okGauge
+	} else if metricType == CounterType {
+		valCounter, okCounter := metricsCounter[metricName]
+		return servermetrics.CounterToString(servermetrics.Counter(valCounter)), okCounter
+	} else {
+		return "", false
+	}
 }
 
 func (memStorage *MemStorage) PrintAll() (string, error) {
